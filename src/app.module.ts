@@ -5,7 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 const DB_USERNAME = 'root';
 const DB_PASSWORD = 'ScMDywWb398yJG5';
-const DB_NAME = 'test';
+const DB_NAME = 'Cluster0';
 
 @Module({
   imports: [
