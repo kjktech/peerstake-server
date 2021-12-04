@@ -11,6 +11,7 @@ const DB_NAME = 'peerstake-server';
   imports: [
     MongooseModule.forRoot(
       `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@cluster0.apxoi.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`,
+      { dbName: DB_NAME },
     ),
     // AuthModule,
     // BankModule,
