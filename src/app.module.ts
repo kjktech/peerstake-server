@@ -5,7 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 const DB_USERNAME = 'root';
 const DB_PASSWORD = 'ScMDywWb398yJG5';
-const DB_NAME = 'peerstake';
+const DB_NAME = 'peerstake-server';
 
 @Module({
   imports: [
