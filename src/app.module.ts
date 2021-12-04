@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 
 const DB_USERNAME = 'root';
-const DB_PASSWORD = '';
+const DB_PASSWORD = 'ScMDywWb398yJG5';
 const DB_NAME = 'peerstake';
 
 @Module({
