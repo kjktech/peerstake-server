@@ -11,7 +11,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { jwt_expire_time, BCRYPT_SALT } from 'src/constants';
-import { IToken, UserRoles } from 'src/enums';
+import { IToken, Genders } from 'src/enums';
 import { User } from 'src/models/user.model';
 import { SignInDto, SignUpDto } from 'src/dto/auth.dto';
 import messenger from 'src/utils/messenger';
@@ -83,7 +83,7 @@ export class AuthService {
   }
 
   async signUp(signUpPayload: SignUpDto) {
-    let { password, email } = signUpPayload;
+    let { password, email, gender } = signUpPayload;
 
     let userExists: User;
 
@@ -108,6 +108,8 @@ export class AuthService {
       let newUser = {
         ...signUpPayload,
         password,
+        token: 'unassigned',
+        gender: Genders[gender.toUpperCase()],
       };
 
       new this.userModel(newUser).save();
