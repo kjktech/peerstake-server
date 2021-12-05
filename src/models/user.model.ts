@@ -19,7 +19,10 @@ export const UserSchema = new mongoose.Schema(
     },
     wallet: WalletSchema,
   },
-  { timestamps: true },
+  {
+    collection: 'users',
+    timestamps: true,
+  },
 );
 
 export interface User {
