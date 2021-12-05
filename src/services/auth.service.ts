@@ -26,6 +26,7 @@ export class AuthService {
   reviseUserPayload(user): User {
     delete user.id;
     delete user.password;
+    delete user.confirm_password;
     delete user.token;
 
     return user;
