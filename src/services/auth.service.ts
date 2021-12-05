@@ -113,10 +113,6 @@ export class AuthService {
 
       newUser = this.reviseUserPayload(newUser);
 
-      messenger(newUser.email, 'You logged in', {
-        text: 'A login has been identified on your account if this was not you, click here to reset password',
-      });
-
       return newUser;
     } catch (e) {
       Logger.error(e);
@@ -158,6 +154,10 @@ export class AuthService {
       foundUser.token = token.toString();
 
       foundUser.save();
+
+      messenger(foundUser.email, 'You logged in', {
+        text: 'A login has been identified on your account if this was not you, click here to reset password',
+      });
 
       return foundUser;
     } catch (e) {

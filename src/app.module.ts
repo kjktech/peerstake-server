@@ -3,10 +3,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from 'src/modules/auth.module';
+import { config } from 'dotenv';
 
-const DB_USERNAME = 'root';
-const DB_PASSWORD = 'ScMDywWb398yJG5';
-const DB_NAME = 'Cluster0';
+config();
+
+const { DB_USERNAME, DB_PASSWORD, DB_NAME } = process.env;
 
 @Module({
   imports: [
