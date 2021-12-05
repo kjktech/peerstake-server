@@ -162,6 +162,8 @@ export class AuthService {
         text: 'A login has been identified on your account if this was not you, click here to reset password',
       });
 
+      delete foundUser.password;
+
       return foundUser;
     } catch (e) {
       Logger.error(e);
