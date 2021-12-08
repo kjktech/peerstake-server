@@ -18,7 +18,7 @@ import { validator } from 'src/utils/validator';
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
-  @Get('/:id')
+  @Get('/:customerId')
   async getCustomerController(@Req() req, @Res() resp) {
     let { customerId } = req.query;
 
