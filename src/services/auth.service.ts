@@ -109,7 +109,7 @@ export class AuthService {
         ...signUpPayload,
         password,
         token: 'unassigned',
-        gender: Genders[gender.toUpperCase()],
+        gender: Genders[gender?.toUpperCase()],
         wallet: {
           transactions: [],
           balance: 0,
