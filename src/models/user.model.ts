@@ -19,6 +19,7 @@ export const UserSchema = new mongoose.Schema(
       required: true,
     },
     wallet: WalletSchema,
+    dob: {},
   },
   {
     collection: 'users',
@@ -38,6 +39,7 @@ export interface User {
   email: string;
   address: string;
   token: string;
+  dob: string;
   wallet: Wallet;
   save: () => {};
 }

@@ -1,10 +1,7 @@
-export class CustomerService{
+export class CustomerService {
+  async getCustomerBalance(customerId) {}
 
-  async getCustomerBalance(customerId){
-    
-  }
+  async updateCustomer(cutomerUpdatePayload) {}
 
-  async updateCustomer(cutomerUpdatePayload){
-    
-  }
+  async getCustomer(cutomerUpdatePayload) {}
 }

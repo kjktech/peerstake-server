@@ -8,6 +8,7 @@ export class SignUpDto {
   username: string;
   confirm_password: string;
   gender: string;
+  dob: string;
 }
 
 export class SignInDto {
