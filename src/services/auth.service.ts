@@ -110,6 +110,11 @@ export class AuthService {
         password,
         token: 'unassigned',
         gender: Genders[gender.toUpperCase()],
+        wallet: {
+          transactions: [],
+          balance: 0,
+          currency: 'NAIRA',
+        },
       };
 
       new this.userModel(newUser).save();

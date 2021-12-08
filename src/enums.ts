@@ -4,7 +4,7 @@ export interface IToken {
 }
 
 export enum CurrencyTypes {
-  NAIRA = 'NGN',
+  NAIRA = 'NAIRA',
   DOLLARS = 'DOLLARS',
 }
 
