@@ -72,10 +72,8 @@ export class AuthController {
       confirm_password,
       first_name,
       last_name,
-      address,
       email,
       dob,
-      gender,
     } = body;
 
     const hasError = validator([
@@ -101,11 +99,6 @@ export class AuthController {
         options: { required: true, isString: true, equalTo: password },
       },
       {
-        name: 'address',
-        value: address,
-        options: { isString: true },
-      },
-      {
         name: 'firstname',
         value: first_name,
         options: { required: true, isString: true },
@@ -119,11 +112,6 @@ export class AuthController {
         name: 'email',
         value: email,
         options: { required: true, isString: true, isEmail: true },
-      },
-      {
-        name: 'gender',
-        value: gender,
-        options: { required: true, isString: true },
       },
       {
         name: 'date of birth',

@@ -9,15 +9,8 @@ export const UserSchema = new mongoose.Schema(
     phone_number: { type: Number, required: true },
     password: { type: String, required: true },
     username: { type: String, required: true },
-    address: { type: String, required: true },
     email: { type: String, required: true },
     token: { type: String, required: true },
-    gender: {
-      type: String,
-      enum: Genders,
-      default: Genders.MALE,
-      required: true,
-    },
     wallet: WalletSchema,
     dob: {},
   },
@@ -35,9 +28,7 @@ export interface User {
   username: string;
   password: string;
   confirm_password: string;
-  gender: string;
   email: string;
-  address: string;
   token: string;
   dob: string;
   wallet: Wallet;

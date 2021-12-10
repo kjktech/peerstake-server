@@ -18,23 +18,25 @@ import { validator } from 'src/utils/validator';
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
-  @Get('/:customerId')
-  async getCustomerController(@Req() req, @Res() resp) {
-    let { customerId } = req.query;
+  @Get('customer/:id')
+  async getCustomerController(@Param('id') id, @Req() req, @Res() resp) {
+    // let { id } = req.params;
 
     const errorMsgs = validator([
       {
         name: 'customer id',
-        value: +customerId,
-        options: { required: true, isNumber: true },
+        value: id,
+        options: { required: true, isString: true },
       },
     ]);
+
+    console.log(id);
 
     if (errorMsgs) {
       throw new NotAcceptableException(null, errorMsgs?.[0].msg?.[0]);
     }
 
-    const customer = await this.customerService.getCustomer(customerId);
+    const customer = await this.customerService.getCustomer(id);
 
     resp.json({
       code: 0,

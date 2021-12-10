@@ -83,7 +83,7 @@ export class AuthService {
   }
 
   async signUp(signUpPayload: SignUpDto) {
-    let { password, email, gender } = signUpPayload;
+    let { password, email } = signUpPayload;
 
     let userExists: User;
 
@@ -109,7 +109,6 @@ export class AuthService {
         ...signUpPayload,
         password,
         token: 'unassigned',
-        gender: Genders[gender?.toUpperCase()],
         wallet: {
           transactions: [],
           balance: 0,
