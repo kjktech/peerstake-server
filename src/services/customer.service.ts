@@ -47,7 +47,37 @@ export class CustomerService {
     // }
   }
 
-  async updateCustomer(cutomerUpdatePayload) {}
+  async updateCustomer(customerUpdatePayload) {
+    const { id } = customerUpdatePayload;
+
+    const foundCustomer = await this.userModel.findOne({ _id: id });
+
+    if (!foundCustomer) {
+      throw new InternalServerErrorException(null, 'could not find customer');
+    }
+
+    // console.log(foundCustomer);
+
+    try {
+      const filter = { _id: id };
+
+      const update = {
+        ...customerUpdatePayload,
+      };
+
+      const updatedCustomer = await this.userModel.findOneAndUpdate(
+        filter,
+        update,
+        {
+          new: true,
+        },
+      );
+
+      return updatedCustomer;
+    } catch {
+      throw new NotFoundException(null, 'could not find customer');
+    }
+  }
 
   async getCustomer(customerId: string) {
     try {

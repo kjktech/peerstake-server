@@ -1,5 +1,4 @@
 import * as mongoose from 'mongoose';
-import { Genders } from 'src/enums';
 import { WalletSchema, Wallet } from 'src/models/wallet.model';
 
 export const UserSchema = new mongoose.Schema(

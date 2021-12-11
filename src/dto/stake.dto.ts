@@ -4,7 +4,7 @@ import { User } from 'src/models/user.model';
 export class createStakeDto {
   name?: string;
   creator?: string;
-  supervisor?: string;
+  supervisors?: User[];
   amount?: string;
   description?: string;
   currency?: CurrencyTypes;

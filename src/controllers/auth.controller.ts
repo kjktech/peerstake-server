@@ -123,9 +123,13 @@ export class AuthController {
     if (!hasError) {
       const user = await this.authService.signUp(body);
 
-      resp.json({ user, descrption: 'operaton sucessful', code: 0 });
+      resp.json({ user, description: 'operaton sucessful', code: 0 });
     } else {
-      throw new NotAcceptableException('', hasError?.[0].msg[0]);
+      resp.json({
+        status: 'failed',
+        description: hasError?.[0].msg[0],
+        code: 406,
+      });
     }
   }
 }

@@ -6,6 +6,7 @@ import { AuthModule } from 'src/modules/auth.module';
 import { config } from 'dotenv';
 import { CustomerModule } from './modules/customer.module';
 import { StakeModule } from './modules/stake.module';
+import { AdminModule } from './modules/admin.module';
 
 config();
 
@@ -22,6 +23,7 @@ const DB_NAME = 'peerstake-db';
     AuthModule,
     CustomerModule,
     StakeModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

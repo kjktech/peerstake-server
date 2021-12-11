@@ -14,8 +14,8 @@ export enum TransactionTypes {
   TRANSFER = 'TRANSFER',
 }
 
-export enum UserRoles {
-  ADMIN = 'ADMIN',
+export enum AdminTypes {
+  SUPER_ADMIN = 'SUPER_ADMIN',
   NORMAL = 'NORMAL',
 }
 

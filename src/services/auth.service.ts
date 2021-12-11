@@ -11,7 +11,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { jwt_expire_time, BCRYPT_SALT } from 'src/constants';
-import { IToken, Genders } from 'src/enums';
+import { IToken } from 'src/enums';
 import { User } from 'src/models/user.model';
 import { SignInDto, SignUpDto } from 'src/dto/auth.dto';
 import messenger from 'src/utils/messenger';
@@ -83,22 +83,38 @@ export class AuthService {
   }
 
   async signUp(signUpPayload: SignUpDto) {
-    let { password, email } = signUpPayload;
+    let { password, email, username } = signUpPayload;
 
-    let userExists: User;
+    let emailExists: User;
+    let usernameExists: User;
 
     try {
-      userExists = await this.userModel.findOne({ email });
+      emailExists = await this.userModel.findOne({ email });
     } catch (e) {
       Logger.error(e);
 
       throw new InternalServerErrorException(null, 'error checking db');
     }
 
-    if (userExists) {
+    try {
+      usernameExists = await this.userModel.findOne({ username });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, 'error checking db');
+    }
+
+    if (emailExists) {
       throw new NotAcceptableException(
         null,
         'this email is already registered....try changing your email to continue',
+      );
+    }
+
+    if (usernameExists) {
+      throw new NotAcceptableException(
+        null,
+        'this username is already registered....try changing your username to continue',
       );
     }
 

@@ -48,34 +48,49 @@ export class CustomerController {
   @Put('update')
   // @UseMiddleware('userGuard')
   async updateCustomer(@Res() resp, @Body() body) {
-    const { username, firstName, lastName, address, email } = body;
+    const { id, username, first_name, last_name, address, email } = body;
 
     const hasError = validator([
       {
-        name: 'username',
-        value: username,
+        name: 'customer id',
+        value: id,
         options: { required: true, isString: true },
       },
-      {
-        name: 'address',
-        value: address,
-        options: { required: true, isString: true },
-      },
-      {
-        name: 'firstname',
-        value: firstName,
-        options: { required: true, isString: true },
-      },
-      {
-        name: 'lastname',
-        value: lastName,
-        options: { required: true, isString: true },
-      },
-      {
-        name: 'email',
-        value: email,
-        options: { required: true, isString: true, isEmail: true },
-      },
+      username
+        ? {
+            name: 'username',
+            value: username,
+            options: { isString: true },
+          }
+        : null,
+      address
+        ? {
+            name: 'address',
+            value: address,
+            options: { isString: true },
+          }
+        : null,
+      first_name
+        ? {
+            name: 'firstname',
+            value: first_name,
+            options: { isString: true },
+          }
+        : null,
+      last_name
+        ? {
+            name: 'lastname',
+            value: last_name,
+            options: { isString: true },
+          }
+        : null,
+      email
+        ? {
+            name: 'email',
+            value: email,
+            options: { isString: true, isEmail: true },
+          }
+        : null,
     ]);
 
     if (!hasError) {
@@ -87,7 +102,7 @@ export class CustomerController {
     }
   }
 
-  @Get('balance')
+  @Get('cutomer/:id/balance')
   async getBalanceController(@Req() req, @Res() resp) {
     let { customerId } = req.query;
 
@@ -100,12 +115,19 @@ export class CustomerController {
     ]);
 
     if (errorMsgs) {
+      resp.json({
+        status: 'failed',
+        code: 0,
+        description: errorMsgs?.[0].msg?.[0],
+      });
+
       throw new NotAcceptableException(null, errorMsgs?.[0].msg?.[0]);
     }
 
     const balance = await this.customerService.getCustomerBalance(customerId);
 
     resp.json({
+      status: 'success',
       code: 0,
       description: 'operation successful',
       balance,

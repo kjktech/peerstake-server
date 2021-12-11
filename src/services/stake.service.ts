@@ -10,12 +10,29 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { createStakeDto, updateStakeDto } from 'src/dto/stake.dto';
 import { Stake } from 'src/models/stake.model';
+import { User } from 'src/models/user.model';
 
 @Injectable()
 export class StakeService {
   constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
     @InjectModel('Stake') private readonly stakeModel: Model<Stake>,
   ) {}
+
+  async getParties(partiesIds: string[]): Promise<User[]> {
+    // parties.map(e=>{
+
+    // });
+
+    Promise.all([
+      this.userModel.find({ _id: '61b06db6a6ebc700226a9e4f' }),
+      this.userModel.find({ _id: '61b085a02b6b9f4084bad0fa' }),
+    ]).then(([user, member]) => {
+      console.log(user, member);
+    });
+
+    return;
+  }
 
   async createStake(stake_payload: createStakeDto) {
     let { parties } = stake_payload;

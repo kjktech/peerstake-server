@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  InternalServerErrorException,
   NotAcceptableException,
   NotFoundException,
   Param,
@@ -28,7 +29,15 @@ export class StakeController {
     @Res({ passthrough: true }) resp,
     @Body() body: createStakeDto,
   ) {
-    const { name, creator, supervisor, amount, description } = body;
+    const {
+      name,
+      creator,
+      supervisors,
+      amount,
+      description,
+      currency,
+      parties,
+    } = body;
 
     const hasError = validator([
       {
@@ -42,13 +51,23 @@ export class StakeController {
         options: { required: true, isString: true },
       },
       {
-        name: 'supervisor',
-        value: supervisor,
-        options: { required: true, isString: true },
+        name: 'parties',
+        value: parties,
+        options: { required: true, isArray: true },
+      },
+      {
+        name: 'supervisors',
+        value: supervisors,
+        options: { required: true, isArray: true },
       },
       {
         name: 'amount',
         value: amount,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'currency',
+        value: currency,
         options: { required: true, isString: true },
       },
       description
@@ -68,14 +87,38 @@ export class StakeController {
       },
     ]);
 
+    if (supervisors.length < 1) {
+      resp.json({
+        status: 'failed',
+        description: 'must have at least one supervisor to create a stake',
+        code: 406,
+      });
+    }
+
+    if (parties.length < 1) {
+      resp.json({
+        status: 'failed',
+        description: 'must have at least one other party to create a stake',
+        code: 406,
+      });
+    }
+
     if (!hasError) {
       const stake = await this.stakeService.createStake(body);
 
-      return {
+      resp.json({
         stake,
-        message: 'operation successful',
-      };
+        status: 'success',
+        description: 'operation successful',
+        code: 200,
+      });
     } else {
+      resp.json({
+        status: 'failed',
+        description: 'operation successful',
+        code: 406,
+      });
+
       throw new NotFoundException(null, hasError?.[0].msg[0]);
     }
   }
