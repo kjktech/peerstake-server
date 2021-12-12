@@ -12,9 +12,6 @@ config();
 
 const { DB_USERNAME, DB_PASSWORD, DB_NAME } = process.env;
 
-// const DB_USERNAME = 'root';
-// const DB_PASSWORD = 'ScMDywWb398yJG5';
-// const DB_NAME = 'peerstake-db';
 @Module({
   imports: [
     MongooseModule.forRoot(
