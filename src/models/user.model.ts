@@ -7,12 +7,20 @@ export const UserSchema = new mongoose.Schema(
     last_name: { type: String, required: true },
     phone_number: { type: Number, required: true },
     password: { type: String, required: true },
-    username: { type: String, required: true },
-    email: { type: String, required: true },
+    username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
     token: { type: String, required: true },
     wallet: WalletSchema,
     dob: {},
   },
+  {
+    collection: 'users',
+    timestamps: true,
+  },
+);
+
+export const User_ReferenceSchema = new mongoose.Schema(
+  {},
   {
     collection: 'users',
     timestamps: true,
@@ -32,4 +40,8 @@ export interface User {
   dob: string;
   wallet: Wallet;
   save: () => {};
+}
+
+export interface User_Reference {
+  id: string;
 }

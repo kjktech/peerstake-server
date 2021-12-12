@@ -8,7 +8,7 @@ export class createStakeDto {
   amount?: string;
   description?: string;
   currency?: CurrencyTypes;
-  parties?: User[];
+  parties?: string[];
 }
 
 export class updateStakeDto {
@@ -18,5 +18,5 @@ export class updateStakeDto {
   supervisor: string;
   amount: string;
   description: string;
-  parties: User[];
+  parties: string[];
 }

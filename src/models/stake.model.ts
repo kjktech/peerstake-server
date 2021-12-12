@@ -1,15 +1,15 @@
 import * as mongoose from 'mongoose';
 import { CurrencyTypes } from 'src/enums';
-import { User, UserSchema } from './user.model';
+import { User_Reference, User_ReferenceSchema } from './user.model';
 
 export const StakeSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    creator: { type: Number, required: true },
-    parties: [UserSchema],
+    creator: { type: String, required: true },
+    parties: [User_ReferenceSchema],
     description: { type: String },
     amount: { type: String, required: true },
-    supervisor: { type: Number },
+    supervisors: [],
   },
   {
     collection: 'stakes',
@@ -20,10 +20,10 @@ export const StakeSchema = new mongoose.Schema(
 export interface Stake {
   name: string;
   creator: string;
-  supervisor: string;
+  supervisors: [];
   amount: string;
   description: string;
   currency: CurrencyTypes;
-  parties: User[];
+  parties: User_Reference[];
   save: () => {};
 }

@@ -22,27 +22,29 @@ export class CustomerController {
   async getCustomerController(@Param('id') id, @Req() req, @Res() resp) {
     // let { id } = req.params;
 
-    const errorMsgs = validator([
-      {
-        name: 'customer id',
-        value: id,
-        options: { required: true, isString: true },
-      },
-    ]);
-
     console.log(id);
 
-    if (errorMsgs) {
-      throw new NotAcceptableException(null, errorMsgs?.[0].msg?.[0]);
-    }
+    // const errorMsgs = validator([
+    //   {
+    //     name: 'customer id',
+    //     value: id,
+    //     options: { required: true, isString: true },
+    //   },
+    // ]);
 
-    const customer = await this.customerService.getCustomer(id);
+    // console.log(id);
 
-    resp.json({
-      code: 0,
-      description: 'operation successful',
-      customer,
-    });
+    // if (errorMsgs) {
+    //   throw new NotAcceptableException(null, errorMsgs?.[0].msg?.[0]);
+    // }
+
+    // const customer = await this.customerService.getCustomer(id);
+
+    // resp.json({
+    //   code: 0,
+    //   description: 'operation successful',
+    //   customer,
+    // });
   }
 
   @Put('update')
