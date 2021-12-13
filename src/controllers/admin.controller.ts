@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   Res,
 } from '@nestjs/common';
@@ -34,11 +35,11 @@ export class AdminController {
     } = body;
 
     const hasError = validator([
-      // {
-      //   name: 'super admin id',
-      //   value: super_admin_id,
-      //   options: { required: true, isString: true },
-      // },
+      {
+        name: 'super admin id',
+        value: super_admin_id,
+        options: { required: true, isString: true },
+      },
       {
         name: 'password',
         value: password,
@@ -80,11 +81,90 @@ export class AdminController {
     if (!hasError) {
       const admin = await this.adminService.createAdmin(body);
 
-      return {
+      resp.json({
         admin,
         message: 'operation successful',
-      };
+        code: 200,
+      });
     } else {
+      resp.json({
+        message: hasError?.[0].msg[0],
+        code: 406,
+      });
+
+      throw new NotAcceptableException(null, hasError?.[0].msg[0]);
+    }
+  }
+
+  @Get('get-all-customers')
+  async getAllCustomersController(
+    @Query() query,
+    @Res({ passthrough: true }) resp,
+  ) {
+    const { super_admin_id } = query;
+
+    const hasError = validator([
+      {
+        name: 'super admin id',
+        value: super_admin_id,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const allCustomers = await this.adminService.getAllCustomers(
+        super_admin_id,
+      );
+
+      resp.json({
+        allCustomers,
+        message: 'operation successful',
+        code: 200,
+      });
+    } else {
+      resp.json({
+        message: hasError?.[0].msg[0],
+        code: 406,
+      });
+
+      throw new NotFoundException(null, hasError?.[0].msg[0]);
+    }
+  }
+
+  @Put('block-customer')
+  async blockCustomerController(@Req() req, @Res({ passthrough: true }) resp) {
+    const { adminId, customerId } = req.body;
+
+    const hasError = validator([
+      {
+        name: 'admin id',
+        value: adminId,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'customer id',
+        value: customerId,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const blockedCustomer = await this.adminService.blockCustomer(
+        adminId,
+        customerId,
+      );
+
+      resp.json({
+        blockedCustomer,
+        message: 'operation successful',
+        code: 200,
+      });
+    } else {
+      resp.json({
+        message: hasError?.[0].msg[0],
+        code: 406,
+      });
+
       throw new NotFoundException(null, hasError?.[0].msg[0]);
     }
   }

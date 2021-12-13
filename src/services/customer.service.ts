@@ -79,13 +79,23 @@ export class CustomerService {
     }
   }
 
-  async getCustomer(customerId: string) {
+  async getCustomer(id: string, email: string, username: string) {
+    const validQuery = id ?? email ?? username;
+    const validQueryType = id
+      ? 'id'
+      : email
+      ? 'email'
+      : username
+      ? 'username'
+      : 'undefined';
+
+    // console.log('valid query', validQuery);
+    // console.log('valid query type', validQueryType);
+
     try {
       const customer = await this.userModel.findOne({
-        _id: customerId,
+        [`${validQueryType === 'id' ? '_id' : validQueryType}`]: validQuery,
       });
-
-      console.log(customer);
 
       return customer;
     } catch (e) {

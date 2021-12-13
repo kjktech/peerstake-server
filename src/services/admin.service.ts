@@ -13,13 +13,24 @@ import { Model } from 'mongoose';
 import { BCRYPT_SALT } from 'src/constants';
 import { AdminTypes } from 'src/enums';
 import { Admin } from 'src/models/admin.model';
+import { User } from 'src/models/user.model';
 
 @Injectable()
 export class AdminService {
   constructor(
     @InjectModel('Admin') private readonly adminModel: Model<Admin>,
+    @InjectModel('User') private readonly userModel: Model<User>,
     private readonly jwtService: JwtService,
   ) {}
+
+  reviseUserPayload(admin): Admin {
+    delete admin.id;
+    delete admin.password;
+    delete admin.confirm_password;
+    delete admin.token;
+
+    return admin;
+  }
 
   async createAdmin(createAdminPayload) {
     let { password, email } = createAdminPayload;
@@ -48,18 +59,102 @@ export class AdminService {
         ...createAdminPayload,
         password,
         token: 'unassigned',
-        type: AdminTypes.SUPER_ADMIN,
+        type: AdminTypes.NORMAL,
       };
 
       new this.adminModel(newAdmin).save();
 
-      // newAdmin = this.reviseUserPayload(newAdmin);
+      newAdmin = this.reviseUserPayload(newAdmin);
 
       return newAdmin;
     } catch (e) {
       Logger.error(e);
 
       throw new InternalServerErrorException(null, e);
+    }
+  }
+
+  async getAllCustomers(super_admin_id) {
+    let foundAdmin: Admin;
+
+    try {
+      foundAdmin = await this.adminModel.findOne({
+        _id: super_admin_id,
+        type: AdminTypes.SUPER_ADMIN,
+      });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, 'error checking db');
+    }
+
+    if (!foundAdmin) {
+      Logger.error('invaid credentials. could not find matching super admin');
+
+      throw new InternalServerErrorException(
+        null,
+        'invaid credentials. could not find matching super admin',
+      );
+    }
+
+    try {
+      const allCustomers: User[] = await this.userModel.find({});
+
+      return allCustomers;
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, 'error checking db');
+    }
+  }
+
+  async blockCustomer(adminId, customerId) {
+    let foundAdmin: Admin;
+    let foundCustomer: User;
+
+    try {
+      foundAdmin = await this.adminModel.findOne({
+        _id: adminId,
+      });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(
+        null,
+        'error checking db for admin',
+      );
+    }
+
+    if (!foundAdmin) {
+      Logger.error('invaid credentials. could not find matching super admin');
+
+      throw new InternalServerErrorException(
+        null,
+        'invaid credentials. could not find matching super admin',
+      );
+    }
+
+    try {
+      foundCustomer = await this.userModel.findOne({
+        _id: customerId,
+      });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(
+        null,
+        'error checking db for customer',
+      );
+    }
+
+    try {
+      const allCustomers: User[] = await this.userModel.find({});
+
+      return allCustomers;
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, 'error checking db');
     }
   }
 }

@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   Res,
 } from '@nestjs/common';
@@ -18,33 +19,63 @@ import { validator } from 'src/utils/validator';
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
-  @Get('customer/:id')
-  async getCustomerController(@Param('id') id, @Req() req, @Res() resp) {
-    // let { id } = req.params;
+  @Get('get-by')
+  async getCustomerController(@Query() query, @Res() resp) {
+    let { id, username, email } = query;
 
-    console.log(id);
+    const errorMsgs = validator([
+      id && {
+        name: 'customer id',
+        value: id,
+        options: { isString: true },
+      },
 
-    // const errorMsgs = validator([
-    //   {
-    //     name: 'customer id',
-    //     value: id,
-    //     options: { required: true, isString: true },
-    //   },
-    // ]);
+      username && {
+        name: 'customer username',
+        value: username,
+        options: { isString: true },
+      },
 
-    // console.log(id);
+      email && {
+        name: 'customer email',
+        value: email,
+        options: { isString: true },
+      },
+    ]);
 
-    // if (errorMsgs) {
-    //   throw new NotAcceptableException(null, errorMsgs?.[0].msg?.[0]);
-    // }
+    if (errorMsgs) {
+      resp.json({
+        status: 'failed',
+        code: 406,
+        description: errorMsgs?.[0].msg?.[0],
+      });
 
-    // const customer = await this.customerService.getCustomer(id);
+      throw new NotAcceptableException(null, errorMsgs?.[0].msg?.[0]);
+    }
 
-    // resp.json({
-    //   code: 0,
-    //   description: 'operation successful',
-    //   customer,
-    // });
+    if (!username && !email && !id) {
+      resp.json({
+        status: 'failed',
+        code: 406,
+        description: 'at least one query must be provided to fetch customer',
+      });
+
+      throw new NotAcceptableException(null, errorMsgs?.[0].msg?.[0]);
+    }
+
+    const customer = await this.customerService.getCustomer(
+      id,
+      email,
+      username,
+    );
+
+    resp.json({
+      code: 0,
+      description: 'operation successful',
+      customer,
+    });
+
+    return 'russ';
   }
 
   @Put('update')
