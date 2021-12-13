@@ -101,20 +101,18 @@ export class AdminController {
     @Query() query,
     @Res({ passthrough: true }) resp,
   ) {
-    const { super_admin_id } = query;
+    const { id } = query;
 
     const hasError = validator([
       {
         name: 'super admin id',
-        value: super_admin_id,
+        value: id,
         options: { required: true, isString: true },
       },
     ]);
 
     if (!hasError) {
-      const allCustomers = await this.adminService.getAllCustomers(
-        super_admin_id,
-      );
+      const allCustomers = await this.adminService.getAllCustomers(id);
 
       resp.json({
         allCustomers,

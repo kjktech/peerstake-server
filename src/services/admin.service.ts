@@ -32,7 +32,7 @@ export class AdminService {
     return admin;
   }
 
-  async createAdmin(createAdminPayload) {
+  async createAdmin(createAdminPayload: any) {
     let { password, email } = createAdminPayload;
 
     let adminExists: Admin;
@@ -74,12 +74,12 @@ export class AdminService {
     }
   }
 
-  async getAllCustomers(super_admin_id) {
+  async getAllCustomers(admin_id: string) {
     let foundAdmin: Admin;
 
     try {
       foundAdmin = await this.adminModel.findOne({
-        _id: super_admin_id,
+        _id: admin_id,
         type: AdminTypes.SUPER_ADMIN,
       });
     } catch (e) {
@@ -108,9 +108,8 @@ export class AdminService {
     }
   }
 
-  async blockCustomer(adminId, customerId) {
+  async blockCustomer(adminId: string, customerId: string) {
     let foundAdmin: Admin;
-    let foundCustomer: User;
 
     try {
       foundAdmin = await this.adminModel.findOne({
@@ -135,26 +134,21 @@ export class AdminService {
     }
 
     try {
-      foundCustomer = await this.userModel.findOne({
-        _id: customerId,
-      });
-    } catch (e) {
-      Logger.error(e);
-
-      throw new InternalServerErrorException(
-        null,
-        'error checking db for customer',
+      let deletedCustomer: User = await this.userModel.findOneAndUpdate(
+        {
+          _id: customerId,
+        },
+        { blocked: true },
+        {
+          new: true,
+        },
       );
-    }
 
-    try {
-      const allCustomers: User[] = await this.userModel.find({});
-
-      return allCustomers;
+      return deletedCustomer;
     } catch (e) {
       Logger.error(e);
 
-      throw new InternalServerErrorException(null, 'error checking db');
+      throw new InternalServerErrorException(null, 'error blocking customer');
     }
   }
 }

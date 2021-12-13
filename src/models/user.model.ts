@@ -37,6 +37,7 @@ export interface User {
   password: string;
   confirm_password: string;
   email: string;
+  blocked: boolean;
   token: string;
   dob: string;
   wallet: Wallet;

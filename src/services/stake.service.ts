@@ -41,7 +41,7 @@ export class StakeService {
   async createStake(stake_payload: createStakeDto) {
     let { parties } = stake_payload;
 
-    const userReferences: User_Reference[] = await this.verifyParties(parties);
+    // const userReferences: User_Reference[] = await this.verifyParties(parties);
 
     try {
       let newStake = {

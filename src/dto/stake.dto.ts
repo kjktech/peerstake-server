@@ -9,14 +9,15 @@ export class createStakeDto {
   description?: string;
   currency?: CurrencyTypes;
   parties?: string[];
+  dueDate?: Date;
 }
 
 export class updateStakeDto {
   id: string;
   name: string;
   creator: string;
-  supervisor: string;
   amount: string;
   description: string;
-  parties: string[];
+  currency?: CurrencyTypes;
+  dueDate: Date;
 }
