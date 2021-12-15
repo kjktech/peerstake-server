@@ -261,7 +261,7 @@ export class StakeController {
     ]);
 
     if (!hasError) {
-      const stake = await this.stakeService.claimStake(req.body);
+      const stake = await this.stakeService.preClaimStake(req.body);
 
       resp.json({
         stake,
@@ -280,52 +280,20 @@ export class StakeController {
     }
   }
 
-  @Put('verify')
+  @Post('verify')
   async verifyStakeController(@Req() req, @Res({ passthrough: true }) resp) {
-    const { id, name, amount, description, currency, dueDate } = req.body;
+    const { partyId, stakeId } = req.body;
 
     const hasError = validator([
       {
+        name: 'party id',
+        value: partyId,
+        options: { required: true, isString: true },
+      },
+      {
         name: 'stake id',
-        value: id,
+        value: stakeId,
         options: { required: true, isString: true },
-      },
-      {
-        name: 'name',
-        value: name,
-        options: { required: true, isString: true },
-      },
-      {
-        name: 'amount',
-        value: amount,
-        options: { required: true, isString: true },
-      },
-      {
-        name: 'currency',
-        value: currency,
-        options: { required: true, isString: true },
-      },
-      description
-        ? {
-            name: 'description',
-            value: description,
-            options: { isString: true },
-          }
-        : null,
-      {
-        name: 'name',
-        value: name,
-        options: {
-          required: true,
-          isString: true,
-        },
-      },
-      {
-        name: 'Due Date',
-        value: dueDate,
-        options: {
-          required: true,
-        },
       },
     ]);
 

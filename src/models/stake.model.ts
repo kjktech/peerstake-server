@@ -21,7 +21,7 @@ export const StakeSchema = new mongoose.Schema(
     supervisors: [Party_Reference_Schema],
     dueDate: { type: Date, required: true },
     claimed: { type: Boolean, required: true, default: false },
-    claimedRaised: { type: Boolean, required: true, default: false },
+    claimRaised: { type: Boolean, required: true, default: false },
     claimDate: { type: Date },
   },
   {

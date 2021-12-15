@@ -22,6 +22,70 @@ export class StakeService {
     @InjectModel('Stake') private readonly stakeModel: Model<Stake>,
   ) {}
 
+  async fullClaimStake(fc_stake_payload: {
+    stakeId: string;
+    creatorId: string;
+  }) {
+    let { creatorId, stakeId } = fc_stake_payload;
+
+    let stakeExists: Stake;
+    let userExists: User;
+
+    try {
+      userExists = await this.userModel.findOne({ _id: creatorId });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, 'error checking db');
+    }
+
+    if (!userExists) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'user does not exist',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      stakeExists = await this.stakeModel.findOne({ _id: stakeId });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, 'error checking db');
+    }
+
+    if (!stakeExists) {
+      throw new NotAcceptableException(
+        null,
+        'cannot find record of this stake',
+      );
+    }
+
+    try {
+      const updatedStake = await this.stakeModel.findOneAndUpdate(
+        { _id: stakeId },
+        {
+          claimRaised: true,
+          claimDate: new Date(),
+        },
+        {
+          new: true,
+        },
+      );
+
+      //todo: send message to all parties and supervisors
+
+      return updatedStake;
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, e);
+    }
+  }
+
   async verifyParties(partiesIds: string[]): Promise<any> {
     let formatted: Party_Reference[] = [];
 
@@ -174,8 +238,11 @@ export class StakeService {
     }
   }
 
-  async claimStake(stake_payload: { stakeId: string; creatorId: string }) {
-    let { creatorId, stakeId } = stake_payload;
+  async preClaimStake(cl_stake_payload: {
+    stakeId: string;
+    creatorId: string;
+  }) {
+    let { creatorId, stakeId } = cl_stake_payload;
 
     let stakeExists: Stake;
     let userExists: User;
@@ -235,14 +302,15 @@ export class StakeService {
     }
   }
 
-  async verifyStake(stake_payload) {
-    let { id, stakeId } = stake_payload;
+  async verifyStake(ve_stake_payload: { stakeId: string; partyId: string }) {
+    let { partyId, stakeId } = ve_stake_payload;
 
-    let stakeExists: Stake;
-    let userExists: User;
+    let foundStake: Stake;
+    let foundUser: User;
+    let foundPartyRef = false;
 
     try {
-      userExists = await this.userModel.findOne({ _id: stakeId });
+      foundUser = await this.userModel.findOne({ _id: partyId });
     } catch (e) {
       Logger.error(e);
 
@@ -251,7 +319,7 @@ export class StakeService {
 
     //todo: check if user is party to stake provided
 
-    if (!userExists) {
+    if (!foundUser) {
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,
@@ -262,7 +330,7 @@ export class StakeService {
     }
 
     try {
-      stakeExists = await this.stakeModel.findOne({
+      foundStake = await this.stakeModel.findOne({
         _id: stakeId,
         claimed: false,
         claimRaised: true,
@@ -273,25 +341,58 @@ export class StakeService {
       throw new InternalServerErrorException(null, 'error checking db');
     }
 
-    if (!stakeExists) {
+    if (!foundStake) {
       throw new NotAcceptableException(
         null,
         'cannot find record of this stake',
       );
     }
 
-    try {
-      let updatedStake = {
-        ...stake_payload,
-      };
+    foundStake['parties'].map((each, idx) => {
+      if (each['userId'] === foundUser['_id']) foundPartyRef = true;
+    });
 
-      new this.stakeModel(updatedStake).save();
+    // console.log(foundStake);
+    // console.log(foundPartyRef);
 
-      return updatedStake;
-    } catch (e) {
-      Logger.error(e);
+    // const updatedStake = await this.stakeModel.updateOne(
+    //   { _id: stakeId, 'parties.userId': partyId },
+    //   {
+    //     $set: {
+    //       'items.$.hasVerifiedStake': true,
+    //     },
+    //   },
+    //   {
+    //     new: true,
+    //   },
+    // );
 
-      throw new InternalServerErrorException(null, e);
-    }
+    const updatedStake = await this.stakeModel.updateOne(
+      { 'parties.userId': partyId },
+      {
+        $set: {
+          'items.$.hasVerifiedStake': true,
+        },
+      },
+      { new: true },
+      (err) => {
+        console.log(err);
+      },
+    );
+
+    return updatedStake;
+    // try {
+    //   let updatedStake = {
+    //     ...ve_stake_payload,
+    //   };
+
+    //   new this.stakeModel(updatedStake).save();
+
+    //   return updatedStake;
+    // } catch (e) {
+    //   Logger.error(e);
+
+    //   throw new InternalServerErrorException(null, e);
+    // }
   }
 }
