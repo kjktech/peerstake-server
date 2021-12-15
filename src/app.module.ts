@@ -19,7 +19,7 @@ const { DB_USERNAME, DB_PASSWORD, DB_NAME } = process.env;
     ),
     AuthModule,
     CustomerModule,
-    StakeModule,
+    // StakeModule,
     AdminModule,
   ],
   controllers: [AppController],
