@@ -20,6 +20,9 @@ export const StakeSchema = new mongoose.Schema(
     amount: { type: String, required: true },
     supervisors: [Party_Reference_Schema],
     dueDate: { type: Date, required: true },
+    claimed: { type: Boolean, required: true, default: false },
+    claimedRaised: { type: Boolean, required: true, default: false },
+    claimDate: { type: Date },
   },
   {
     collection: 'stakes',
@@ -34,8 +37,11 @@ export interface Stake {
   amount: string;
   description: string;
   dueDate: Date;
+  claimDate?: Date;
   currency: CurrencyTypes;
   parties?: Party_Reference[];
+  claimed: boolean;
+  claimedRaised: boolean;
   save?: () => {};
 }
 export interface Party_Reference {

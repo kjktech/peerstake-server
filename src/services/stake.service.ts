@@ -112,6 +112,8 @@ export class StakeService {
         dueDate,
         description,
         creatorId,
+        claimRaised: false,
+        claimed: false,
         currency: currency ?? CurrencyTypes.NAIRA,
         parties: parties_ref_docs,
         supervisors: supervisors_ref_docs,
@@ -172,14 +174,14 @@ export class StakeService {
     }
   }
 
-  async verifyStake(stake_payload) {
-    let { id, stakeId } = stake_payload;
+  async claimStake(stake_payload: { stakeId: string; creatorId: string }) {
+    let { creatorId, stakeId } = stake_payload;
 
     let stakeExists: Stake;
     let userExists: User;
 
     try {
-      userExists = await this.userModel.findOne({ _id: stakeId });
+      userExists = await this.userModel.findOne({ _id: creatorId });
     } catch (e) {
       Logger.error(e);
 
@@ -198,6 +200,73 @@ export class StakeService {
 
     try {
       stakeExists = await this.stakeModel.findOne({ _id: stakeId });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, 'error checking db');
+    }
+
+    if (!stakeExists) {
+      throw new NotAcceptableException(
+        null,
+        'cannot find record of this stake',
+      );
+    }
+
+    try {
+      const updatedStake = await this.stakeModel.findOneAndUpdate(
+        { _id: stakeId },
+        {
+          claimRaised: true,
+          claimDate: new Date(),
+        },
+        {
+          new: true,
+        },
+      );
+
+      //todo: send message to all parties and supervisors
+
+      return updatedStake;
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, e);
+    }
+  }
+
+  async verifyStake(stake_payload) {
+    let { id, stakeId } = stake_payload;
+
+    let stakeExists: Stake;
+    let userExists: User;
+
+    try {
+      userExists = await this.userModel.findOne({ _id: stakeId });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, 'error checking db');
+    }
+
+    //todo: check if user is party to stake provided
+
+    if (!userExists) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'user does not exist',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      stakeExists = await this.stakeModel.findOne({
+        _id: stakeId,
+        claimed: false,
+        claimRaised: true,
+      });
     } catch (e) {
       Logger.error(e);
 

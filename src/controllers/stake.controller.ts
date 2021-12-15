@@ -42,10 +42,12 @@ export class StakeController {
     @UploadedFile() file,
     @Res({ passthrough: true }) resp,
   ) {
-    req.body = {
-      ...req.body,
-      decider: req.body.file.constructor !== Array ? [file] : file,
-    };
+    // console.log(file);
+
+    // req.body = {
+    //   ...req.body,
+    //   decider: req.body.decider.constructor !== Array ? [file] : file,
+    // };
 
     if (req.body.supervisors.constructor !== Array) {
       req.body = {
@@ -238,6 +240,43 @@ export class StakeController {
         description: hasError?.[0].msg[0],
         code: 406,
       });
+    }
+  }
+
+  @Post('claim')
+  async claimStakeController(@Req() req, @Res({ passthrough: true }) resp) {
+    const { creatorId, stakeId } = req.body;
+
+    const hasError = validator([
+      {
+        name: 'creator id',
+        value: creatorId,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'stake id',
+        value: stakeId,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const stake = await this.stakeService.claimStake(req.body);
+
+      resp.json({
+        stake,
+        status: 'success',
+        description: 'operation successful. all parties notified',
+        code: 200,
+      });
+    } else {
+      resp.json({
+        status: 'failed',
+        description: hasError?.[0].msg[0],
+        code: 406,
+      });
+
+      // throw new NotFoundException(null, hasError?.[0].msg[0]);
     }
   }
 
