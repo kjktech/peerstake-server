@@ -1,10 +1,11 @@
 import { CurrencyTypes } from 'src/enums';
-import { User } from 'src/models/user.model';
 
 export class createStakeDto {
+  requesterId: string;
   name?: string;
-  creator?: string;
-  supervisors?: User[];
+  files?: any;
+  creatorId?: string;
+  supervisors?: string[];
   amount?: string;
   description?: string;
   currency?: CurrencyTypes;
@@ -13,9 +14,10 @@ export class createStakeDto {
 }
 
 export class updateStakeDto {
-  id: string;
+  requesterId: string;
+  stakeId: string;
   name: string;
-  creator: string;
+  creatorId: string;
   amount: string;
   description: string;
   currency?: CurrencyTypes;

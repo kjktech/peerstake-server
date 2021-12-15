@@ -35,6 +35,8 @@ export class AuthService {
   async detokenize(req, resp, options?: { noTimeout: boolean }) {
     const { authorization } = req.headers;
 
+    console.log('breeze------------', req.body);
+
     if (!authorization) {
       throw new UnauthorizedException(
         'Unauthorized request',
@@ -50,7 +52,7 @@ export class AuthService {
 
     try {
       user = await this.userModel.findOne({
-        id: unTokenized.userId.toString(),
+        _id: unTokenized.userId.toString(),
       });
     } catch (e) {
       if (e.name === 'EntityNotFound') {
@@ -69,7 +71,7 @@ export class AuthService {
         new Date().getTime() - unTokenized.time <= jwt_expire_time * 1000
       ) {
         user.token = this.jwtService.sign({
-          userId: user.id,
+          userId: user['_id'],
           date: new Date().getTime(),
         });
 
@@ -79,7 +81,7 @@ export class AuthService {
       }
     }
 
-    req.userId = user.id;
+    req.requesterId = user['_id'];
   }
 
   async signUp(signUpPayload: SignUpDto) {

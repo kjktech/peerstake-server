@@ -1,15 +1,24 @@
 import * as mongoose from 'mongoose';
 import { CurrencyTypes } from 'src/enums';
-import { UserSchema, User_Reference, User_ReferenceSchema } from './user.model';
+
+export const Party_Reference_Schema = new mongoose.Schema(
+  {
+    userId: { type: String, required: true },
+    hasVerifiedStake: { type: Boolean, required: true, default: false },
+  },
+  {
+    timestamps: true,
+  },
+);
 
 export const StakeSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    creator: { type: String, required: true },
-    parties: [User_ReferenceSchema],
+    creatorId: { type: String, required: true },
+    parties: [Party_Reference_Schema],
     description: { type: String },
     amount: { type: String, required: true },
-    supervisors: [UserSchema],
+    supervisors: [Party_Reference_Schema],
     dueDate: { type: Date, required: true },
   },
   {
@@ -20,12 +29,16 @@ export const StakeSchema = new mongoose.Schema(
 
 export interface Stake {
   name: string;
-  creator: string;
-  supervisors: [];
+  creatorId: string;
+  supervisors?: Party_Reference[];
   amount: string;
   description: string;
   dueDate: Date;
   currency: CurrencyTypes;
-  parties: User_Reference[];
-  save: () => {};
+  parties?: Party_Reference[];
+  save?: () => {};
+}
+export interface Party_Reference {
+  userId: string;
+  hasVerifiedStake: boolean;
 }

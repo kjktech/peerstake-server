@@ -20,7 +20,7 @@ export const UserSchema = new mongoose.Schema(
   },
 );
 
-export const User_ReferenceSchema = new mongoose.Schema(
+export const User_Reference_Schema = new mongoose.Schema(
   {},
   {
     collection: 'users',
