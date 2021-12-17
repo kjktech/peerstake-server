@@ -395,4 +395,31 @@ export class StakeService {
     //   throw new InternalServerErrorException(null, e);
     // }
   }
+
+  async getStakes(creator_id, stake_id, all) {
+    let foundStake: any;
+
+    // console.log(creator_id, stake_id, all);
+
+    if (all) {
+      try {
+        foundStake = await this.stakeModel.find({ creatorId: creator_id });
+
+        return foundStake;
+      } catch {
+        throw new NotFoundException(null, 'could not find stakes');
+      }
+    } else {
+      try {
+        foundStake = await this.stakeModel.findOne({
+          _id: stake_id,
+          creatorId: creator_id,
+        });
+
+        return foundStake;
+      } catch {
+        throw new NotFoundException(null, 'could not find stake');
+      }
+    }
+  }
 }

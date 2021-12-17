@@ -10,6 +10,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -315,5 +316,42 @@ export class StakeController {
 
       throw new NotFoundException(null, hasError?.[0].msg[0]);
     }
+  }
+
+  @Get('get')
+  async getCustomerController(@Query() query, @Res() resp) {
+    let { creator_id, stake_id, all } = query;
+
+    const errorMsgs = validator([
+      creator_id && {
+        name: 'creator id',
+        value: creator_id,
+        options: { required: true, isString: true },
+      },
+
+      !all && {
+        name: 'stake id',
+        value: stake_id,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (errorMsgs) {
+      resp.json({
+        status: 'failed',
+        code: 406,
+        description: errorMsgs?.[0].msg?.[0],
+      });
+
+      throw new NotAcceptableException(null, errorMsgs?.[0].msg?.[0]);
+    }
+
+    const stakes = await this.stakeService.getStakes(creator_id, stake_id, all);
+
+    resp.json({
+      code: 0,
+      description: 'operation successful',
+      [`stake${all ? 's' : ''}`]: stakes,
+    });
   }
 }

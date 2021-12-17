@@ -74,8 +74,6 @@ export class CustomerController {
       description: 'operation successful',
       customer,
     });
-
-    return 'russ';
   }
 
   @Put('update')
