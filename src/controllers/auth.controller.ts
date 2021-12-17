@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   NotAcceptableException,
   NotFoundException,
   Param,
@@ -13,6 +15,8 @@ import {
 import { SignInDto, SignUpDto } from 'src/dto/auth.dto';
 import { AuthService } from 'src/services/auth.service';
 import { validator } from 'src/utils/validator';
+import { isDateValid } from 'src/utils/helpers';
+var moment = require('moment');
 
 @Controller('auth')
 export class AuthController {
@@ -119,6 +123,31 @@ export class AuthController {
         options: { required: true, isString: true },
       },
     ]);
+
+    if (!isDateValid(dob)) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: 'invalid dob format. DD/MM/YYYY',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+
+    let _age = moment(moment().format('M/D/YYYY'), 'M/D/YYYY').diff(
+      moment(dob, 'M/D/YYYY'),
+      'years',
+    );
+
+    if (parseInt(_age) < 18) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: 'You must be above 18 y/o to register',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
 
     if (!hasError) {
       const user = await this.authService.signUp(body);
