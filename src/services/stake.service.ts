@@ -86,6 +86,33 @@ export class StakeService {
     }
   }
 
+  async verifyCreator(creator_id: string, amount: string) {
+    let foundUser: User = await this.userModel.findOne({
+      _id: creator_id,
+      blocked: false,
+    });
+
+    if (!foundUser) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: 'Wallet empty. Fund wallet',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+
+    if (foundUser['wallet']['balance'] < parseInt(amount)) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: 'Balance too low for amount staked',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
+
   async verifyParties(partiesIds: string[]): Promise<any> {
     let formatted: Party_Reference[] = [];
 
@@ -161,6 +188,8 @@ export class StakeService {
       amount,
       currency,
     } = stake_payload;
+
+    await this.verifyCreator(creatorId, amount);
 
     const parties_ref_docs: Party_Reference[] = await this.verifyParties(
       parties,
