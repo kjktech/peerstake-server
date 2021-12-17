@@ -85,13 +85,22 @@ export class AuthService {
   }
 
   async signUp(signUpPayload: SignUpDto) {
-    let { password, email, username } = signUpPayload;
+    let { password, email, username, phone_number } = signUpPayload;
 
     let emailExists: User;
     let usernameExists: User;
+    let phoneNumberExists: User;
 
     try {
       emailExists = await this.userModel.findOne({ email });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, 'error checking db');
+    }
+
+    try {
+      phoneNumberExists = await this.userModel.findOne({ phone_number });
     } catch (e) {
       Logger.error(e);
 
@@ -109,14 +118,21 @@ export class AuthService {
     if (emailExists) {
       throw new NotAcceptableException(
         null,
-        'this email is already registered....try changing your email to continue',
+        'this email is already taken....try changing your email to continue',
       );
     }
 
     if (usernameExists) {
       throw new NotAcceptableException(
         null,
-        'this username is already registered....try changing your username to continue',
+        'this username is already taken....try changing your username to continue',
+      );
+    }
+
+    if (phoneNumberExists) {
+      throw new NotAcceptableException(
+        null,
+        'phone number is already taken....try changing your username to continue',
       );
     }
 
