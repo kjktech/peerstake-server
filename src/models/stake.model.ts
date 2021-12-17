@@ -5,6 +5,7 @@ export const Party_Reference_Schema = new mongoose.Schema(
   {
     userId: { type: String, required: true },
     hasVerifiedStake: { type: Boolean, required: true, default: false },
+    hasAcceptedStakeInvite: { type: Boolean, required: true, default: false },
   },
   {
     timestamps: true,
@@ -47,4 +48,5 @@ export interface Stake {
 export interface Party_Reference {
   userId: string;
   hasVerifiedStake: boolean;
+  hasAcceptedStakeInvite: boolean;
 }

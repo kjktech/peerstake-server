@@ -139,6 +139,7 @@ export class StakeService {
       formatted.push({
         userId: e['id'],
         hasVerifiedStake: false,
+        hasAcceptedStakeInvite: false,
       });
     });
 
@@ -170,6 +171,7 @@ export class StakeService {
       formatted.push({
         userId: e['id'],
         hasVerifiedStake: false,
+        hasAcceptedStakeInvite: false,
       });
     });
 
@@ -447,6 +449,77 @@ export class StakeService {
       } catch {
         throw new NotFoundException(null, 'could not find stake');
       }
+    }
+  }
+
+  async acceptStakeInvite(party_id, stake_id) {
+    let foundUser: User;
+    let foundStake: Stake;
+
+    try {
+      foundUser = await this.userModel.findOne({
+        _id: party_id,
+        blocked: false,
+      });
+    } catch {
+      throw new NotFoundException(null, 'error checking db for user');
+    }
+
+    if (!foundUser) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'user does not exist',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      foundStake = await this.stakeModel.findOne({
+        _id: stake_id,
+      });
+    } catch {
+      throw new NotFoundException(null, 'error checking db for stake');
+    }
+
+    if (!foundStake) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'stake does not exist',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (foundUser['wallet']['balance'] < parseInt(foundStake['amount'])) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'insufficient funds in your wallet to accept stake',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      const acceptedStake = await this.stakeModel.findOneAndUpdate(
+        {
+          _id: stake_id,
+          'parties.userId': party_id,
+        },
+        {
+          $set: {
+            hasAcceptedStakeInvite: true,
+          },
+        },
+        { new: true },
+      );
+
+      return acceptedStake;
+    } catch {
+      throw new NotFoundException(null, 'could not find stake');
     }
   }
 }

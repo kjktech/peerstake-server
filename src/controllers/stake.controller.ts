@@ -362,4 +362,38 @@ export class StakeController {
       [`stake${all ? 's' : ''}`]: stakes,
     });
   }
+
+  @Get('accept')
+  async acceptCustomerController(@Query() query, @Res() resp) {
+    let { party_id, stake_id } = query;
+
+    const errorMsgs = validator([
+      party_id && {
+        name: 'party id',
+        value: party_id,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (errorMsgs) {
+      resp.json({
+        status: 'failed',
+        code: 406,
+        description: errorMsgs?.[0].msg?.[0],
+      });
+
+      throw new NotAcceptableException(null, errorMsgs?.[0].msg?.[0]);
+    }
+
+    const acceptance = await this.stakeService.acceptStakeInvite(
+      party_id,
+      stake_id,
+    );
+
+    resp.json({
+      code: 0,
+      description: 'operation successful',
+      acceptance,
+    });
+  }
 }
