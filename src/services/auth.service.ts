@@ -209,4 +209,32 @@ export class AuthService {
       throw new InternalServerErrorException(null, 'login failed');
     }
   }
+
+  async initResetPassword(email: string) {
+    let foundUser: User;
+
+    //todo: add token to url string that will be used to verify against user
+    //todo: create pass_reset_code field for user that holds token to verify against
+
+    try {
+      foundUser = await this.userModel.findOne({ email });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new NotFoundException(
+        null,
+        'incorrect credentials. Check your email and password and try again',
+      );
+    }
+
+    if (!foundUser) {
+      throw new NotAcceptableException(null, 'user does not exist');
+    }
+
+    messenger(email, 'reset password', {
+      text: `Click the link below to reset password`,
+    });
+  }
+
+  async completeResetPassword(user_id, password) {}
 }

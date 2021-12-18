@@ -130,13 +130,13 @@ export class StakeController {
       },
     ]);
 
-    if (parseInt(amount) < 10) {
-      resp.json({
-        status: 'failed',
-        description: "you can't stake below 10 naira.",
-        code: 406,
-      });
-    }
+    // if (parseInt(amount) < 10) {
+    //   resp.json({
+    //     status: 'failed',
+    //     description: "you can't stake below 10 naira.",
+    //     code: 406,
+    //   });
+    // }
 
     if (supervisors.length < 1) {
       resp.json({

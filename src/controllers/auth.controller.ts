@@ -55,10 +55,10 @@ export class AuthController {
       const user = await this.authService.signIn(body);
 
       //* return response from server
-      return {
+      resp.json({
         user,
         message: 'operation successful',
-      };
+      });
     } else {
       throw new NotFoundException(null, 'Invalid email/password');
     }
@@ -159,6 +159,29 @@ export class AuthController {
         description: hasError?.[0].msg[0],
         code: 406,
       });
+    }
+  }
+
+  @Post('init-reset-password')
+  async resetPasswordController(@Req() req, @Res({ passthrough: true }) resp) {
+    const { email } = req.body;
+
+    const hasError = validator([
+      {
+        name: 'email',
+        value: email,
+        options: { required: true, isEmail: true },
+      },
+    ]);
+
+    if (!hasError) {
+      await this.authService.initResetPassword(email);
+
+      resp.json({
+        message: 'email sent successfully',
+      });
+    } else {
+      throw new NotFoundException(null, 'counld not process request');
     }
   }
 }

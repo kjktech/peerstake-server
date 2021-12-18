@@ -14,6 +14,7 @@ import { createStakeDto, updateStakeDto } from 'src/dto/stake.dto';
 import { CurrencyTypes } from 'src/enums';
 import { Party_Reference, Stake } from 'src/models/stake.model';
 import { User, User_Reference } from 'src/models/user.model';
+import messenger from 'src/utils/messenger';
 
 @Injectable()
 export class StakeService {
@@ -86,7 +87,7 @@ export class StakeService {
     }
   }
 
-  async verifyCreator(creator_id: string, amount: string) {
+  async verifyCreator(creator_id: string, amount: string): Promise<User> {
     let foundUser: User = await this.userModel.findOne({
       _id: creator_id,
       blocked: false,
@@ -102,19 +103,22 @@ export class StakeService {
       );
     }
 
-    if (foundUser['wallet']['balance'] < parseInt(amount)) {
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_ACCEPTABLE,
-          error: 'Balance too low for amount staked',
-        },
-        HttpStatus.NOT_ACCEPTABLE,
-      );
-    }
+    // if (foundUser['wallet']['balance'] < parseInt(amount)) {
+    //   throw new HttpException(
+    //     {
+    //       status: HttpStatus.NOT_ACCEPTABLE,
+    //       error: 'Balance too low for amount staked',
+    //     },
+    //     HttpStatus.NOT_ACCEPTABLE,
+    //   );
+    // }
+
+    return foundUser;
   }
 
   async verifyParties(partiesIds: string[]): Promise<any> {
-    let formatted: Party_Reference[] = [];
+    let formatted = [];
+    let emails = [];
 
     let asmo = await this.userModel.find(
       {
@@ -141,9 +145,11 @@ export class StakeService {
         hasVerifiedStake: false,
         hasAcceptedStakeInvite: false,
       });
+
+      emails.push(e['email']);
     });
 
-    return formatted;
+    return { info: formatted, emails };
   }
 
   async verifySupervisors(supervisorsIds: string[]): Promise<any> {
@@ -191,11 +197,9 @@ export class StakeService {
       currency,
     } = stake_payload;
 
-    await this.verifyCreator(creatorId, amount);
+    const verified_user: User = await this.verifyCreator(creatorId, amount);
 
-    const parties_ref_docs: Party_Reference[] = await this.verifyParties(
-      parties,
-    );
+    const parties_ref_docs = await this.verifyParties(parties);
 
     const supervisors_ref_docs: Party_Reference[] =
       await this.verifySupervisors(supervisors);
@@ -210,11 +214,15 @@ export class StakeService {
         claimRaised: false,
         claimed: false,
         currency: currency ?? CurrencyTypes.NAIRA,
-        parties: parties_ref_docs,
+        parties: parties_ref_docs.info,
         supervisors: supervisors_ref_docs,
       };
 
       newStake = new this.stakeModel(newStake).save();
+
+      messenger(parties_ref_docs.emails, 'invitation', {
+        text: `${verified_user.username} is inviting you to join a stake: ${name}. Click the link below to accept invitation`,
+      });
 
       return newStake;
     } catch (e) {
