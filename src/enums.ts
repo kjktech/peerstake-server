@@ -14,6 +14,12 @@ export enum TransactionTypes {
   TRANSFER = 'TRANSFER',
 }
 
+export enum TransactionState {
+  PENDING = 'PENDING',
+  DENIED = 'DENIED',
+  APPROVED = 'APPROVED',
+}
+
 export enum AdminTypes {
   SUPER_ADMIN = 'SUPER_ADMIN',
   NORMAL = 'NORMAL',

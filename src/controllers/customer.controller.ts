@@ -76,6 +76,17 @@ export class CustomerController {
     });
   }
 
+  @Get('all-usernames')
+  async getAllCustomersUsernamesController(@Res() resp) {
+    const usernames = await this.customerService.getAllUsernames();
+
+    resp.json({
+      code: 0,
+      description: 'operation successful',
+      usernames,
+    });
+  }
+
   @Put('update')
   // @UseMiddleware('userGuard')
   async updateCustomer(@Res() resp, @Body() body) {
@@ -133,7 +144,7 @@ export class CustomerController {
     }
   }
 
-  @Get('cutomer/:id/balance')
+  @Get('customer/:id/balance')
   async getBalanceController(@Req() req, @Res() resp) {
     let { customerId } = req.query;
 

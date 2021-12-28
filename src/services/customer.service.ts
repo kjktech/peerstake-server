@@ -102,4 +102,16 @@ export class CustomerService {
       throw new NotFoundException(null, 'could not find customer');
     }
   }
+
+  async getAllUsernames() {
+    try {
+      const allCustomers = await this.userModel.find({});
+
+      const usernames = allCustomers.map((customer) => customer.username);
+
+      return usernames;
+    } catch (e) {
+      throw new NotFoundException(null, 'could not find customers');
+    }
+  }
 }

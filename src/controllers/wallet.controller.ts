@@ -1,0 +1,55 @@
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
+import { AuthService } from 'src/services/auth.service';
+import { WalletService } from 'src/services/wallet.service';
+import { validator } from 'src/utils/validator';
+
+@Controller('stake')
+export class WalletController {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly walletService: WalletService,
+  ) {}
+
+  @Get('transactions')
+  async claimStakeController(@Query() query, @Res({ passthrough: true }) resp) {
+    const { id } = query;
+
+    const hasError = validator([
+      {
+        name: 'super admin id',
+        value: id,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const allStakes = await this.walletService.getTransactions(id);
+
+      resp.json({
+        allStakes,
+        message: 'operation successful',
+        code: 200,
+      });
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
+}

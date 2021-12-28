@@ -11,16 +11,28 @@ import {
   Put,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { SignInDto, SignUpDto } from 'src/dto/auth.dto';
 import { AuthService } from 'src/services/auth.service';
 import { validator } from 'src/utils/validator';
 import { isDateValid } from 'src/utils/helpers';
+import { AuthGuard } from '@nestjs/passport';
 var moment = require('moment');
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Get('social-login')
+  @UseGuards(AuthGuard('google'))
+  async socialLogin() {}
+
+  @Get('auth/google/callback')
+  @UseGuards(AuthGuard('google'))
+  async socialLoginRediret(@Req() req) {
+    return this.authService.googleLogin(req);
+  }
 
   @Post('login')
   async loginController(

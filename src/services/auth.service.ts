@@ -210,6 +210,17 @@ export class AuthService {
     }
   }
 
+  googleLogin(req) {
+    if (!req.user) {
+      return 'no user from google';
+    } else {
+      return {
+        message: 'User Info from Google',
+        user: req.user,
+      };
+    }
+  }
+
   async initResetPassword(email: string) {
     let foundUser: User;
 

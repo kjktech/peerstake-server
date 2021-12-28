@@ -1,10 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpException,
+  HttpStatus,
   NotAcceptableException,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -87,12 +91,213 @@ export class AdminController {
         code: 200,
       });
     } else {
-      resp.json({
-        message: hasError?.[0].msg[0],
-        code: 406,
-      });
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
 
-      throw new NotAcceptableException(null, hasError?.[0].msg[0]);
+  @Put('update')
+  // @UseMiddleware('userGuard')
+  async updateAdminController(@Res() resp, @Body() body) {
+    const {
+      super_admin_id,
+      admin_id,
+      username,
+      first_name,
+      last_name,
+      email,
+      address,
+    } = body;
+
+    const hasError = validator([
+      {
+        name: 'super admin id',
+        value: super_admin_id,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'admin id',
+        value: admin_id,
+        options: { required: true, isString: true },
+      },
+      username
+        ? {
+            name: 'username',
+            value: username,
+            options: { isString: true },
+          }
+        : null,
+      address
+        ? {
+            name: 'address',
+            value: address,
+            options: { isString: true },
+          }
+        : null,
+      first_name
+        ? {
+            name: 'firstname',
+            value: first_name,
+            options: { isString: true },
+          }
+        : null,
+      last_name
+        ? {
+            name: 'lastname',
+            value: last_name,
+            options: { isString: true },
+          }
+        : null,
+      email
+        ? {
+            name: 'email',
+            value: email,
+            options: { isString: true, isEmail: true },
+          }
+        : null,
+    ]);
+
+    if (!hasError) {
+      const updatedAdmin = await this.adminService.updateAdmin(body);
+
+      resp.json({ updatedAdmin, descrption: 'operaton sucessful', code: 0 });
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
+
+  @Patch('suspend')
+  async suspendAdminController(
+    @Query() query,
+    @Res({ passthrough: true }) resp,
+  ) {
+    const { super_admin_id, admin_id } = query;
+
+    const hasError = validator([
+      {
+        name: 'super admin id',
+        value: super_admin_id,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'admin id',
+        value: admin_id,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const suspendedAdmin = await this.adminService.suspendAdmin(
+        super_admin_id,
+        admin_id,
+      );
+
+      resp.json({
+        suspendedAdmin,
+        message: 'operation successful',
+        code: 200,
+      });
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
+
+  @Delete('delete')
+  async blockAdminController(@Query() query, @Res({ passthrough: true }) resp) {
+    const { super_admin_id, admin_id } = query;
+
+    const hasError = validator([
+      {
+        name: 'super admin id',
+        value: super_admin_id,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'admin id',
+        value: admin_id,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const deletedCustomer = await this.adminService.deleteAdmin(
+        super_admin_id,
+        admin_id,
+      );
+
+      if (deletedCustomer.success) {
+        resp.json({
+          message: 'operation successful',
+          code: 200,
+        });
+      } else {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_IMPLEMENTED,
+            error: 'could not delete admin',
+          },
+          HttpStatus.NOT_IMPLEMENTED,
+        );
+      }
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
+
+  @Get('get-all-stakes')
+  async getAllStakesController(
+    @Query() query,
+    @Res({ passthrough: true }) resp,
+  ) {
+    const { id } = query;
+
+    const hasError = validator([
+      {
+        name: 'super admin id',
+        value: id,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const allStakes = await this.adminService.getAllStakes(id);
+
+      resp.json({
+        allStakes,
+        message: 'operation successful',
+        code: 200,
+      });
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
     }
   }
 
@@ -120,12 +325,13 @@ export class AdminController {
         code: 200,
       });
     } else {
-      resp.json({
-        message: hasError?.[0].msg[0],
-        code: 406,
-      });
-
-      throw new NotFoundException(null, hasError?.[0].msg[0]);
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
     }
   }
 
@@ -158,12 +364,13 @@ export class AdminController {
         code: 200,
       });
     } else {
-      resp.json({
-        message: hasError?.[0].msg[0],
-        code: 406,
-      });
-
-      throw new NotFoundException(null, hasError?.[0].msg[0]);
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
     }
   }
 }

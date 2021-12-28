@@ -21,21 +21,19 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
 
-  // const configService: ConfigService = app.get(ConfigService);
+  const configService: ConfigService = app.get(ConfigService);
 
   // const adminConfig: ServiceAccount = {
   //   projectId: configService.get<string>('peerstake-e36c0'),
-
-  //   privateKey: configService
-  //     .get<string>('AIzaSyBUxrFVKYzJR15umtd-NIHJEhXN8n1XAV4')
-  //     .replace(/\\n/g, '\n'),
-
+  //   privateKey: configService.get<string>(
+  //     'AIzaSyBUxrFVKYzJR15umtd-NIHJEhXN8n1XAV4',
+  //   ),
+  //   // ?.replace(/\\n/g, '\n'),
   //   clientEmail: configService.get<string>('FIREBASE_CLIENT_EMAIL'),
   // };
 
   // admin.initializeApp({
   //   credential: admin.credential.cert(adminConfig),
-  //   databaseURL: 'https://xxxxx.firebaseio.com',
   // });
 
   app.enableCors();

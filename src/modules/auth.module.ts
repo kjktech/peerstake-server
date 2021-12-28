@@ -6,6 +6,7 @@ import { UserSchema } from 'src/models/user.model';
 import { AuthController } from 'src/controllers/auth.controller';
 import { AuthService } from 'src/services/auth.service';
 import { jwt_expire_time, jwt_secret } from 'src/constants';
+import { GoogleStrategy } from 'src/utils/google-strategy';
 
 config();
 
@@ -20,7 +21,7 @@ const jwtConfig = JwtModule.register({
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, GoogleStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

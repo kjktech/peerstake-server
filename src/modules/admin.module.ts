@@ -7,6 +7,7 @@ import { AdminService } from 'src/services/admin.service';
 import { jwt_expire_time, jwt_secret } from 'src/constants';
 import { AdminSchema } from 'src/models/admin.model';
 import { UserSchema } from 'src/models/user.model';
+import { StakeSchema } from 'src/models/stake.model';
 
 config();
 
@@ -21,6 +22,7 @@ const jwtConfig = JwtModule.register({
     MongooseModule.forFeature([
       { name: 'Admin', schema: AdminSchema },
       { name: 'User', schema: UserSchema },
+      { name: 'Stake', schema: StakeSchema },
     ]),
   ],
   controllers: [AdminController],

@@ -11,6 +11,7 @@ export const AdminSchema = new mongoose.Schema(
     email: { type: String, required: true },
     token: { type: String, required: true },
     type: { type: String, enum: AdminTypes, default: AdminTypes.NORMAL },
+    isSuspended: { type: Boolean, required: true, default: false },
     dob: {},
   },
   {
@@ -30,5 +31,6 @@ export interface Admin {
   email: string;
   token: string;
   dob: string;
+  isSuspended: boolean;
   save: () => {};
 }
