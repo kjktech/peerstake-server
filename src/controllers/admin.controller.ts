@@ -306,21 +306,147 @@ export class AdminController {
     @Query() query,
     @Res({ passthrough: true }) resp,
   ) {
-    const { id } = query;
+    const { admin_id } = query;
 
     const hasError = validator([
       {
         name: 'super admin id',
-        value: id,
+        value: admin_id,
         options: { required: true, isString: true },
       },
     ]);
 
     if (!hasError) {
-      const allCustomers = await this.adminService.getAllCustomers(id);
+      const allCustomers = await this.adminService.getAllCustomers(admin_id);
 
       resp.json({
         allCustomers,
+        message: 'operation successful',
+        code: 200,
+      });
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
+
+  @Get('all-disputes')
+  async getAllStakeDisputesController(
+    @Query() query,
+    @Res({ passthrough: true }) resp,
+  ) {
+    const { admin_id } = query;
+
+    const hasError = validator([
+      {
+        name: 'super admin id',
+        value: admin_id,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const disputes = await this.adminService.getAllDisputes(admin_id);
+
+      resp.json({
+        disputes,
+        message: 'operation successful',
+        code: 200,
+      });
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
+
+  @Post('resolve-dispute')
+  async resolveDisputeAdminController(
+    @Req() req,
+    @Res({ passthrough: true }) resp,
+    @Body() body,
+  ) {
+    const { admin_id, dispute_id, resolution } = body;
+
+    const hasError = validator([
+      {
+        name: 'admin id',
+        value: admin_id,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'dispute id',
+        value: dispute_id,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'resolution',
+        value: resolution,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const resolved = await this.adminService.resolveDispute(
+        admin_id,
+        dispute_id,
+        resolution,
+      );
+
+      resp.json({
+        resolved,
+        message: 'operation successful',
+        code: 200,
+      });
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
+
+  @Get('get-customer-transaction-history')
+  async getTransactionHistoryController(
+    @Query() query,
+    @Res({ passthrough: true }) resp,
+  ) {
+    const { admin_id, customer_id } = query;
+
+    const hasError = validator([
+      {
+        name: 'admin id',
+        value: admin_id,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'customer id',
+        value: customer_id,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const transactions =
+        await this.adminService.getCustomerTransactionHistory(
+          admin_id,
+          customer_id,
+        );
+
+      resp.json({
+        transactions,
         message: 'operation successful',
         code: 200,
       });

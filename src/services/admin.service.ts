@@ -13,9 +13,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { BCRYPT_SALT } from 'src/constants';
-import { AdminTypes } from 'src/enums';
+import { AdminTypes, DisputeStatus } from 'src/enums';
 import { Admin } from 'src/models/admin.model';
-import { Stake } from 'src/models/stake.model';
+import { Stake, Stake_Dispute } from 'src/models/stake.model';
 import { User } from 'src/models/user.model';
 
 @Injectable()
@@ -79,26 +79,42 @@ export class AdminService {
     }
   }
 
-  private async verifySuperAdmin(super_admin_id: string) {
-    let foundSuperAdmin: Admin;
+  private async verifyAdminStatus(
+    admin_id: string,
+    options?: { super: boolean },
+  ) {
+    let foundAdmin: Admin;
+    const isSuperAdmin = options && options.super === true ? true : false;
 
     try {
-      foundSuperAdmin = await this.adminModel.findOne({
-        _id: super_admin_id,
-        type: AdminTypes.SUPER_ADMIN,
-      });
+      foundAdmin = await this.adminModel.findOne(
+        isSuperAdmin
+          ? {
+              _id: admin_id,
+              type: AdminTypes.SUPER_ADMIN,
+            }
+          : {
+              _id: admin_id,
+            },
+      );
     } catch (e) {
       Logger.error(e);
 
       throw new InternalServerErrorException(null, 'error checking db');
     }
 
-    if (!foundSuperAdmin) {
-      Logger.error('invaid credentials. could not find matching super admin');
+    if (!foundAdmin) {
+      Logger.error(
+        `invalid credentials. could not find matching ${
+          isSuperAdmin ? 'super ' : ''
+        }admin`,
+      );
 
       throw new InternalServerErrorException(
         null,
-        'invaid credentials. could not find matching super admin',
+        `invalid credentials. could not find matching ${
+          isSuperAdmin ? 'super ' : ''
+        }admin`,
       );
     }
   }
@@ -106,7 +122,7 @@ export class AdminService {
   async updateAdmin(adminUpdatePayload: any) {
     const { super_admin_id, admin_id } = adminUpdatePayload;
 
-    await this.verifySuperAdmin(super_admin_id);
+    await this.verifyAdminStatus(super_admin_id, { super: true });
 
     try {
       const filter = { _id: admin_id };
@@ -145,11 +161,11 @@ export class AdminService {
     }
 
     if (!foundSuperAdmin) {
-      Logger.error('invaid credentials. could not find matching super admin');
+      Logger.error('invalid credentials. could not find matching super admin');
 
       throw new InternalServerErrorException(
         null,
-        'invaid credentials. could not find matching super admin',
+        'invalid credentials. could not find matching super admin',
       );
     }
 
@@ -190,11 +206,11 @@ export class AdminService {
     }
 
     if (!foundAdmin) {
-      Logger.error('invaid credentials. could not find matching super admin');
+      Logger.error('invalid credentials. could not find matching super admin');
 
       throw new InternalServerErrorException(
         null,
-        'invaid credentials. could not find matching super admin',
+        'invalid credentials. could not find matching super admin',
       );
     }
 
@@ -224,11 +240,11 @@ export class AdminService {
     }
 
     if (!foundAdmin) {
-      Logger.error('invaid credentials. could not find matching super admin');
+      Logger.error('invalid credentials. could not find matching super admin');
 
       throw new InternalServerErrorException(
         null,
-        'invaid credentials. could not find matching super admin',
+        'invalid credentials. could not find matching super admin',
       );
     }
 
@@ -260,16 +276,16 @@ export class AdminService {
     }
 
     if (!foundAdmin) {
-      Logger.error('invaid credentials. could not find matching super admin');
+      Logger.error('invalid credentials. could not find matching super admin');
 
       throw new InternalServerErrorException(
         null,
-        'invaid credentials. could not find matching super admin',
+        'invalid credentials. could not find matching super admin',
       );
     }
 
     try {
-      let deletedCustomer: User = await this.userModel.findOneAndUpdate(
+      let blockedCustomer: User = await this.userModel.findOneAndUpdate(
         {
           _id: customerId,
         },
@@ -279,7 +295,7 @@ export class AdminService {
         },
       );
 
-      return deletedCustomer;
+      return blockedCustomer;
     } catch (e) {
       Logger.error(e);
 
@@ -288,7 +304,7 @@ export class AdminService {
   }
 
   async deleteAdmin(super_admin_id: string, admin_id: string) {
-    await this.verifySuperAdmin(super_admin_id);
+    await this.verifyAdminStatus(super_admin_id, { super: true });
 
     try {
       this.adminModel.deleteOne(
@@ -300,7 +316,7 @@ export class AdminService {
                 status: HttpStatus.NOT_IMPLEMENTED,
                 error: err,
               },
-              HttpStatus.NOT_ACCEPTABLE,
+              HttpStatus.NOT_IMPLEMENTED,
             );
           }
         },
@@ -312,5 +328,84 @@ export class AdminService {
 
       throw new InternalServerErrorException(null, 'error blocking customer');
     }
+  }
+
+  async getCustomerTransactionHistory(admin_id: string, customer_id: string) {
+    await this.verifyAdminStatus(admin_id);
+
+    let foundCustomer: User;
+
+    try {
+      foundCustomer = await this.userModel.findOne({ _id: customer_id });
+
+      return foundCustomer.wallet.transactions;
+    } catch (e) {
+      Logger.error(e);
+
+      throw new InternalServerErrorException(null, 'error blocking customer');
+    }
+  }
+
+  async getAllDisputes(admin_id: string) {
+    await this.verifyAdminStatus(admin_id);
+
+    let foundStakes;
+    let stakeDisputes: Stake_Dispute[] = [];
+
+    try {
+      foundStakes = await this.stakeModel.find({
+        disputes: { $elemMatch: { status: DisputeStatus.OPEN } },
+      });
+
+      stakeDisputes = foundStakes.map((each_doc: Stake) => {
+        let each_doc_dispute = [];
+
+        each_doc.disputes.map((each_dispute: Stake_Dispute) => {
+          if (each_dispute.status === DisputeStatus.OPEN) {
+            each_doc_dispute.push(each_dispute);
+          }
+        });
+
+        return each_doc_dispute;
+      });
+
+      stakeDisputes = [].concat(...stakeDisputes);
+
+      return stakeDisputes;
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: 'Error getting disputes',
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+  }
+
+  async resolveDispute(
+    admin_id: string,
+    dispute_id: string,
+    resolution: DisputeStatus,
+  ): Promise<any> {
+    await this.verifyAdminStatus(admin_id);
+
+    let resolvedStake: Stake;
+
+    try {
+      resolvedStake = await this.stakeModel.findOneAndUpdate(
+        {
+          disputes: {
+            $elemMatch: { _id: dispute_id, status: DisputeStatus.OPEN },
+          },
+        },
+        { $set: { 'disputes.$.status': resolution } },
+        { new: true },
+      );
+    } catch (e) {}
+
+    return resolvedStake.disputes;
   }
 }

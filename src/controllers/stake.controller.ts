@@ -345,13 +345,13 @@ export class StakeController {
     ]);
 
     if (errorMsgs) {
-      resp.json({
-        status: 'failed',
-        code: 406,
-        description: errorMsgs?.[0].msg?.[0],
-      });
-
-      throw new NotAcceptableException(null, errorMsgs?.[0].msg?.[0]);
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: errorMsgs?.[0].msg?.[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
     }
 
     const stakes = await this.stakeService.getStakes(creator_id, stake_id, all);
@@ -376,13 +376,13 @@ export class StakeController {
     ]);
 
     if (errorMsgs) {
-      resp.json({
-        status: 'failed',
-        code: 406,
-        description: errorMsgs?.[0].msg?.[0],
-      });
-
-      throw new NotAcceptableException(null, errorMsgs?.[0].msg?.[0]);
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: errorMsgs?.[0].msg?.[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
     }
 
     const acceptance = await this.stakeService.acceptStakeInvite(
@@ -395,5 +395,51 @@ export class StakeController {
       description: 'operation successful',
       acceptance,
     });
+  }
+
+  @Post('dispute')
+  async disputeStakeController(@Req() req, @Res({ passthrough: true }) resp) {
+    const { disputer_id, stake_id, details } = req.body;
+
+    const hasError = validator([
+      {
+        name: 'disputer id',
+        value: disputer_id,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'stake id',
+        value: stake_id,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'details',
+        value: details,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const stakeDispute = await this.stakeService.disputeStake(
+        stake_id,
+        disputer_id,
+        details,
+      );
+
+      resp.json({
+        stakeDispute,
+        status: 'success',
+        description: 'operation successful',
+        code: 200,
+      });
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg?.[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
   }
 }

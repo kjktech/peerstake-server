@@ -29,3 +29,13 @@ export enum Genders {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
 }
+
+export enum ResolutionTypes {
+  RESOLVED = 'RESOLVED',
+  UNRESOLVED = 'UNRESOLVED',
+}
+
+export enum DisputeStatus {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+}

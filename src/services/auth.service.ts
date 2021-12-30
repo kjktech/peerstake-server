@@ -1,4 +1,6 @@
 import {
+  HttpException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -247,5 +249,31 @@ export class AuthService {
     });
   }
 
-  async completeResetPassword(user_id, password) {}
+  async completeResetPassword(user_id: string, password: string) {}
+
+  async verifyUser(user_id: string) {
+    let foundUser: User;
+
+    try {
+      foundUser = await this.userModel.findOne({ _id: user_id });
+    } catch (e) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: e,
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+
+    if (!foundUser) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'user does not exist',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
 }

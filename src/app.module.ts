@@ -9,10 +9,11 @@ import { StakeModule } from './modules/stake.module';
 import { AdminModule } from './modules/admin.module';
 import { ConfigModule } from '@nestjs/config';
 import { WalletModule } from './modules/wallet.module';
+import { PaystackModule } from 'nestjs-paystack';
 
 config();
 
-const { DB_USERNAME, DB_PASSWORD, DB_NAME } = process.env;
+const { DB_USERNAME, DB_PASSWORD, DB_NAME, PAYSTACK_TEST_KEY } = process.env;
 
 @Module({
   imports: [
@@ -20,6 +21,9 @@ const { DB_USERNAME, DB_PASSWORD, DB_NAME } = process.env;
     MongooseModule.forRoot(
       `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@cluster0.apxoi.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`,
     ),
+    PaystackModule.forRoot({
+      apiKey: PAYSTACK_TEST_KEY,
+    }),
     AuthModule,
     CustomerModule,
     StakeModule,

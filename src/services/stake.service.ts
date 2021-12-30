@@ -1,6 +1,7 @@
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -11,16 +12,18 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { createStakeDto, updateStakeDto } from 'src/dto/stake.dto';
-import { CurrencyTypes } from 'src/enums';
-import { Party_Reference, Stake } from 'src/models/stake.model';
+import { CurrencyTypes, DisputeStatus } from 'src/enums';
+import { Party_Reference, Stake, Stake_Dispute } from 'src/models/stake.model';
 import { User, User_Reference } from 'src/models/user.model';
 import messenger from 'src/utils/messenger';
+import { AuthService } from './auth.service';
 
 @Injectable()
 export class StakeService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     @InjectModel('Stake') private readonly stakeModel: Model<Stake>,
+    private readonly authService: AuthService,
   ) {}
 
   async fullClaimStake(fc_stake_payload: {
@@ -175,9 +178,9 @@ export class StakeService {
 
     asmo.map((e) => {
       formatted.push({
-        userId: e['id'],
-        hasVerifiedStake: false,
-        hasAcceptedStakeInvite: false,
+        user_id: e['id'],
+        has_verified_stake: false,
+        has_accepted_stake_invite: false,
       });
     });
 
@@ -435,7 +438,7 @@ export class StakeService {
     // }
   }
 
-  async getStakes(creator_id, stake_id, all) {
+  async getStakes(creator_id: string, stake_id: string, all: any) {
     let foundStake: any;
 
     if (all) {
@@ -460,7 +463,7 @@ export class StakeService {
     }
   }
 
-  async acceptStakeInvite(party_id, stake_id) {
+  async acceptStakeInvite(party_id: string, stake_id: string) {
     let foundUser: User;
     let foundStake: Stake;
 
@@ -528,6 +531,77 @@ export class StakeService {
       return acceptedStake;
     } catch {
       throw new NotFoundException(null, 'could not find stake');
+    }
+  }
+
+  async disputeStake(stake_id: string, disputer_id: string, details: string) {
+    let foundStake: Stake;
+
+    await this.authService.verifyUser(disputer_id);
+
+    try {
+      foundStake = await this.stakeModel.findOne({ _id: stake_id });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: e,
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+
+    if (!foundStake) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: 'cannot find record of this stake',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+
+    let openStakes: Stake_Dispute[] = foundStake.disputes.filter(
+      (each: Stake_Dispute) => each.status === DisputeStatus.OPEN,
+    );
+
+    if (openStakes.length !== 0) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: 'A dispute is currently open on this stake.',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+
+    try {
+      foundStake = await this.stakeModel.findOneAndUpdate(
+        { _id: stake_id },
+        {
+          $push: {
+            disputes: {
+              disputer_id,
+              details: details,
+            },
+          },
+        },
+        { new: true },
+      );
+
+      return foundStake;
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: e,
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
     }
   }
 }
