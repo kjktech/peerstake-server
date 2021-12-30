@@ -5,6 +5,7 @@ import { User } from 'src/models/user.model';
 import { InjectPaystack } from 'nestjs-paystack';
 import * as paystack from 'paystack';
 import { TransactionTypes } from 'src/enums';
+import { Wallet } from 'src/models/wallet.model';
 
 @Injectable()
 export class WalletService {
@@ -17,13 +18,11 @@ export class WalletService {
 
   async verifyWallet(wallet_id: string) {}
 
-  async deposit(wallet_id: string, amount: string) {
-    let foundCustomer: User;
+  async findWallet(wallet_id: string) {
+    let allCustomers;
 
     try {
-      foundCustomer = await this.userModel.findOne({
-        _id: wallet_id,
-      });
+      allCustomers = await this.userModel.find({});
     } catch (e) {
       Logger.error(e);
 
@@ -36,11 +35,25 @@ export class WalletService {
       );
     }
 
-    try {
-      const filter = { $match: { 'wallet._id': wallet_id } };
+    allCustomers = allCustomers.filter(
+      (e: User) => e.wallet['_id'].toString() === wallet_id,
+    );
 
+    let wallet = {
+      data: allCustomers[0].wallet,
+      owner_id: allCustomers[0]._id,
+    };
+
+    return wallet;
+  }
+
+  async deposit(wallet_id: string, amount: string) {
+    const wallet = await this.findWallet(wallet_id);
+
+    try {
+      const filter = { _id: wallet.owner_id };
       const update = {
-        'wallet.balance': foundCustomer.wallet.balance + parseInt(amount),
+        'wallet.balance': wallet.data.balance + parseInt(amount),
         $push: {
           transactions: {
             amount,
@@ -48,7 +61,6 @@ export class WalletService {
           },
         },
       };
-
       const updatedCustomer = await this.userModel.findOneAndUpdate(
         filter,
         update,
@@ -56,11 +68,9 @@ export class WalletService {
           new: true,
         },
       );
-
       return updatedCustomer.wallet;
     } catch (e) {
       Logger.error(e);
-
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,
@@ -72,6 +82,21 @@ export class WalletService {
   }
 
   async withdrawal(wallet_id: string, amount: string) {
+    // this.paystackClient.listTrx().then((res) => {
+    //   console.log(res);
+    // });
+    // if (foundCustomer.wallet.balance < parseInt(amount)) {
+    //   throw new HttpException(
+    //     {
+    //       status: HttpStatus.NOT_ACCEPTABLE,
+    //       error: 'you do not have sufficent balance to perform this operation',
+    //     },
+    //     HttpStatus.NOT_ACCEPTABLE,
+    //   );
+    // }
+  }
+
+  async balance(wallet_id: string) {
     // this.paystackClient.listTrx().then((res) => {
     //   console.log(res);
     // });

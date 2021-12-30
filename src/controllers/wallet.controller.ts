@@ -119,4 +119,35 @@ export class WalletController {
       );
     }
   }
+
+  @Get('balance')
+  async balanceController(@Res() resp, @Query() query) {
+    const { wallet_id } = query;
+
+    const hasError = validator([
+      {
+        name: 'wallet id',
+        value: wallet_id,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      const allStakes = await this.walletService.balance(wallet_id);
+
+      resp.json({
+        allStakes,
+        message: 'operation successful',
+        code: 200,
+      });
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
 }
