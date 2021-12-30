@@ -50,13 +50,6 @@ export class StakeController {
     //   decider: req.body.decider.constructor !== Array ? [file] : file,
     // };
 
-    if (req.body.supervisors.constructor !== Array) {
-      req.body = {
-        ...req.body,
-        supervisors: [req.body.supervisors + ''],
-      };
-    }
-
     if (req.body.parties.constructor !== Array) {
       req.body = {
         ...req.body,
@@ -64,7 +57,7 @@ export class StakeController {
       };
     }
 
-    let { supervisors, parties }: createStakeDto = req.body;
+    let { parties }: createStakeDto = req.body;
 
     const {
       creatorId,
@@ -89,11 +82,6 @@ export class StakeController {
       {
         name: 'parties',
         value: parties,
-        options: { required: true },
-      },
-      {
-        name: 'supervisors',
-        value: supervisors,
         options: { required: true },
       },
       {
@@ -138,14 +126,6 @@ export class StakeController {
     //   });
     // }
 
-    if (supervisors.length < 1) {
-      resp.json({
-        status: 'failed',
-        description: 'must have at least one supervisor to create a stake',
-        code: 406,
-      });
-    }
-
     if (parties.length < 1) {
       resp.json({
         status: 'failed',
@@ -153,19 +133,6 @@ export class StakeController {
         code: 406,
       });
     }
-
-    supervisors.map((supe: string) => {
-      if (parties.includes(supe)) {
-        throw new HttpException(
-          {
-            status: 'failed',
-            code: HttpStatus.FORBIDDEN,
-            error: 'A party to a stake cannot also be a supervisor',
-          },
-          HttpStatus.FORBIDDEN,
-        );
-      }
-    });
 
     if (!hasError) {
       const stake = await this.stakeService.createStake(req.body);

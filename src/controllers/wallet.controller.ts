@@ -71,10 +71,10 @@ export class WalletController {
     ]);
 
     if (!hasError) {
-      const updatedWallet = await this.walletService.deposit(wallet_id, amount);
+      const deposit = await this.walletService.deposit(wallet_id, amount);
 
       resp.json({
-        updatedWallet,
+        deposit,
         message: 'operation successful',
         code: 200,
       });
@@ -102,10 +102,10 @@ export class WalletController {
     ]);
 
     if (!hasError) {
-      const allStakes = await this.walletService.withdrawal(wallet_id, amount);
+      const withdrawal = await this.walletService.withdrawal(wallet_id, amount);
 
       resp.json({
-        allStakes,
+        withdrawal,
         message: 'operation successful',
         code: 200,
       });

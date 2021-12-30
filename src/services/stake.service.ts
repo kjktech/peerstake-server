@@ -80,8 +80,7 @@ export class StakeService {
         },
       );
 
-      //todo: send message to all parties and supervisors
-
+      //todo: send message to all parties
       return updatedStake;
     } catch (e) {
       Logger.error(e);
@@ -155,43 +154,11 @@ export class StakeService {
     return { info: formatted, emails };
   }
 
-  async verifySupervisors(supervisorsIds: string[]): Promise<any> {
-    let formatted: Party_Reference[] = [];
-
-    let asmo = await this.userModel.find(
-      {
-        _id: supervisorsIds.map((_id) => _id),
-      },
-      (err, docs) => {
-        if (err) {
-          throw new HttpException(
-            {
-              status: 'failed',
-              code: HttpStatus.FORBIDDEN,
-              error: err,
-            },
-            HttpStatus.FORBIDDEN,
-          );
-        }
-      },
-    );
-
-    asmo.map((e) => {
-      formatted.push({
-        user_id: e['id'],
-        has_verified_stake: false,
-        has_accepted_stake_invite: false,
-      });
-    });
-
-    return formatted;
-  }
-
   async createStake(stake_payload: createStakeDto) {
     let {
       files,
       parties,
-      supervisors,
+
       name,
       description,
       creatorId,
@@ -204,9 +171,6 @@ export class StakeService {
 
     const parties_ref_docs = await this.verifyParties(parties);
 
-    const supervisors_ref_docs: Party_Reference[] =
-      await this.verifySupervisors(supervisors);
-
     try {
       let newStake: any = {
         name,
@@ -218,7 +182,6 @@ export class StakeService {
         claimed: false,
         currency: currency ?? CurrencyTypes.NAIRA,
         parties: parties_ref_docs.info,
-        supervisors: supervisors_ref_docs,
       };
 
       newStake = new this.stakeModel(newStake).save();
@@ -334,8 +297,7 @@ export class StakeService {
         },
       );
 
-      //todo: send message to all parties and supervisors
-
+      //todo: send message to all parties
       return updatedStake;
     } catch (e) {
       Logger.error(e);
