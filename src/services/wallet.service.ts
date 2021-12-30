@@ -19,7 +19,8 @@ export class WalletService {
   async verifyWallet(wallet_id: string) {}
 
   async findWallet(wallet_id: string) {
-    let allCustomers;
+    let allCustomers: User[];
+    let foundCustomer: any;
 
     try {
       allCustomers = await this.userModel.find({});
@@ -35,13 +36,23 @@ export class WalletService {
       );
     }
 
-    allCustomers = allCustomers.filter(
+    foundCustomer = allCustomers.filter(
       (e: User) => e.wallet['_id'].toString() === wallet_id,
     );
 
+    if (foundCustomer.length < 1) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'cound not find wallet with matching credentials',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     let wallet = {
-      data: allCustomers[0].wallet,
-      owner_id: allCustomers[0]._id,
+      data: foundCustomer[0].wallet,
+      owner_id: foundCustomer[0]._id,
     };
 
     return wallet;
@@ -82,32 +93,64 @@ export class WalletService {
   }
 
   async withdrawal(wallet_id: string, amount: string) {
-    // this.paystackClient.listTrx().then((res) => {
-    //   console.log(res);
-    // });
-    // if (foundCustomer.wallet.balance < parseInt(amount)) {
-    //   throw new HttpException(
-    //     {
-    //       status: HttpStatus.NOT_ACCEPTABLE,
-    //       error: 'you do not have sufficent balance to perform this operation',
-    //     },
-    //     HttpStatus.NOT_ACCEPTABLE,
-    //   );
-    // }
+    const wallet = await this.findWallet(wallet_id);
+
+    if (wallet.data.balance < parseInt(amount)) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: 'insufficient funds',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+
+    try {
+      const filter = { _id: wallet.owner_id };
+      const update = {
+        'wallet.balance': wallet.data.balance - parseInt(amount),
+        $push: {
+          transactions: {
+            amount,
+            type: TransactionTypes.DEPOSIT,
+          },
+        },
+      };
+      const updatedCustomer = await this.userModel.findOneAndUpdate(
+        filter,
+        update,
+        {
+          new: true,
+        },
+      );
+      return updatedCustomer.wallet;
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: 'Error depositing funds',
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
   }
 
   async balance(wallet_id: string) {
-    // this.paystackClient.listTrx().then((res) => {
-    //   console.log(res);
-    // });
-    // if (foundCustomer.wallet.balance < parseInt(amount)) {
-    //   throw new HttpException(
-    //     {
-    //       status: HttpStatus.NOT_ACCEPTABLE,
-    //       error: 'you do not have sufficent balance to perform this operation',
-    //     },
-    //     HttpStatus.NOT_ACCEPTABLE,
-    //   );
-    // }
+    try {
+      const wallet = await this.findWallet(wallet_id);
+
+      return wallet.data.balance;
+    } catch (e) {
+      Logger.error(e);
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'could not return wallet balance',
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
   }
 }

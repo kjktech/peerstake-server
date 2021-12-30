@@ -133,10 +133,10 @@ export class WalletController {
     ]);
 
     if (!hasError) {
-      const allStakes = await this.walletService.balance(wallet_id);
+      const balance = await this.walletService.balance(wallet_id);
 
       resp.json({
-        allStakes,
+        balance,
         message: 'operation successful',
         code: 200,
       });
