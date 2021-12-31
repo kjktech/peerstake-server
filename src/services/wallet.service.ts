@@ -2,8 +2,6 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/models/user.model';
-// import { InjectPaystack } from 'nestjs-paystack';
-// import * as paystack from 'paystack';
 import { TransactionTypes } from 'src/enums';
 import { Wallet } from 'src/models/wallet.model';
 const PayStack = require('paystack-node');
