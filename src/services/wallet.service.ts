@@ -2,21 +2,48 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/models/user.model';
-import { InjectPaystack } from 'nestjs-paystack';
-import * as paystack from 'paystack';
+// import { InjectPaystack } from 'nestjs-paystack';
+// import * as paystack from 'paystack';
 import { TransactionTypes } from 'src/enums';
 import { Wallet } from 'src/models/wallet.model';
+const PayStack = require('paystack-node');
+import { config } from 'dotenv';
+import { generateId } from 'src/utils/helpers';
 
+config();
+
+const environment = process.env.NODE_ENV;
+const { PAYSTACK_TEST_KEY } = process.env;
 @Injectable()
 export class WalletService {
+  paystack: typeof PayStack;
+
   constructor(
-    @InjectModel('User') private readonly userModel: Model<User>,
-    @InjectPaystack() private readonly paystackClient: paystack,
-  ) {}
+    @InjectModel('User') private readonly userModel: Model<User>, // @InjectPaystack() private readonly paystackClient: paystack,
+  ) {
+    this.paystack = new PayStack(PAYSTACK_TEST_KEY, environment);
+  }
 
-  async getTransactions(wallet_id: string) {}
+  async getTransactions(wallet_id: string) {
+    console.log(this.paystack);
 
-  async verifyWallet(wallet_id: string) {}
+    try {
+      const wallet: { data: Wallet; owner: User } = await this.findWallet(
+        wallet_id,
+      );
+
+      return wallet.data.transactions;
+    } catch (e) {
+      Logger.error(e);
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: 'could not return wallet transactions',
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+  }
 
   async findWallet(wallet_id: string) {
     let allCustomers: User[];
@@ -52,48 +79,72 @@ export class WalletService {
 
     let wallet = {
       data: foundCustomer[0].wallet,
-      owner_id: foundCustomer[0]._id,
+      owner: foundCustomer[0],
     };
 
     return wallet;
   }
 
   async deposit(wallet_id: string, amount: string) {
-    const wallet = await this.findWallet(wallet_id);
+    const wallet: { data: Wallet; owner: any } = await this.findWallet(
+      wallet_id,
+    );
 
     try {
-      const filter = { _id: wallet.owner_id };
-      const update = {
-        'wallet.balance': wallet.data.balance + parseInt(amount),
-        $push: {
-          transactions: {
-            amount,
-            type: TransactionTypes.DEPOSIT,
-          },
-        },
-      };
-      const updatedCustomer = await this.userModel.findOneAndUpdate(
-        filter,
-        update,
-        {
-          new: true,
-        },
-      );
-      return updatedCustomer.wallet;
+      const res = await this.paystack.initializeTransaction({
+        reference: generateId(20),
+        amount: 500000,
+        email: 'rjemekoba@gmail.com',
+      });
+
+      console.log(res);
+
+      // .then((res) => {
+      //   console.log(res.body);
+      // })
+      // .catch((err) => {
+      //   // deal with error
+      // });
     } catch (e) {
       Logger.error(e);
+
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Error depositing funds',
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: 'Error implementing paystack api',
         },
         HttpStatus.NOT_IMPLEMENTED,
       );
     }
+
+    // try {
+    //   wallet.data.transactions.push({
+    //     amount,
+    //     type: TransactionTypes.DEPOSIT,
+    //   });
+
+    //   wallet.data.balance = wallet.data.balance + parseInt(amount);
+
+    //   const resp: User = await wallet.owner.save();
+
+    //   return resp.wallet;
+    // } catch (e) {
+    //   Logger.error(e);
+
+    //   throw new HttpException(
+    //     {
+    //       status: HttpStatus.NOT_IMPLEMENTED,
+    //       error: 'Error depositing funds',
+    //     },
+    //     HttpStatus.NOT_IMPLEMENTED,
+    //   );
+    // }
   }
 
   async withdrawal(wallet_id: string, amount: string) {
-    const wallet = await this.findWallet(wallet_id);
+    const wallet: { data: Wallet; owner: any } = await this.findWallet(
+      wallet_id,
+    );
 
     if (wallet.data.balance < parseInt(amount)) {
       throw new HttpException(
@@ -106,24 +157,16 @@ export class WalletService {
     }
 
     try {
-      const filter = { _id: wallet.owner_id };
-      const update = {
-        'wallet.balance': wallet.data.balance - parseInt(amount),
-        $push: {
-          transactions: {
-            amount,
-            type: TransactionTypes.DEPOSIT,
-          },
-        },
-      };
-      const updatedCustomer = await this.userModel.findOneAndUpdate(
-        filter,
-        update,
-        {
-          new: true,
-        },
-      );
-      return updatedCustomer.wallet;
+      wallet.data.transactions.push({
+        amount,
+        type: TransactionTypes.WITHDRAWAL,
+      });
+
+      wallet.data.balance = wallet.data.balance - parseInt(amount);
+
+      const resp: User = await wallet.owner.save();
+
+      return resp.wallet;
     } catch (e) {
       Logger.error(e);
 
@@ -146,7 +189,7 @@ export class WalletService {
       Logger.error(e);
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
+          status: HttpStatus.NOT_IMPLEMENTED,
           error: 'could not return wallet balance',
         },
         HttpStatus.NOT_IMPLEMENTED,

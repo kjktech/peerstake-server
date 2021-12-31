@@ -22,4 +22,5 @@ export interface Wallet {
   password: string;
   token: string;
   transactions: Transaction[];
+  save?: () => {};
 }

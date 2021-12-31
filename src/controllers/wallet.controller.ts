@@ -24,21 +24,21 @@ export class WalletController {
 
   @Get('transactions')
   async claimStakeController(@Query() query, @Res({ passthrough: true }) resp) {
-    const { id } = query;
+    const { wallet_id } = query;
 
     const hasError = validator([
       {
-        name: 'super admin id',
-        value: id,
+        name: 'wallet id',
+        value: wallet_id,
         options: { required: true, isString: true },
       },
     ]);
 
     if (!hasError) {
-      const allStakes = await this.walletService.getTransactions(id);
+      const transactions = await this.walletService.getTransactions(wallet_id);
 
       resp.json({
-        allStakes,
+        transactions,
         message: 'operation successful',
         code: 200,
       });

@@ -310,7 +310,7 @@ export class AdminController {
 
     const hasError = validator([
       {
-        name: 'super admin id',
+        name: 'admin id',
         value: admin_id,
         options: { required: true, isString: true },
       },

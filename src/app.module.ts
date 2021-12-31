@@ -21,9 +21,9 @@ const { DB_USERNAME, DB_PASSWORD, DB_NAME, PAYSTACK_TEST_KEY } = process.env;
     MongooseModule.forRoot(
       `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@cluster0.apxoi.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`,
     ),
-    PaystackModule.forRoot({
-      apiKey: PAYSTACK_TEST_KEY,
-    }),
+    // PaystackModule.forRoot({
+    //   apiKey: PAYSTACK_TEST_KEY,
+    // }),
     AuthModule,
     CustomerModule,
     StakeModule,

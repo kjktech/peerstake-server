@@ -4,6 +4,25 @@ export function isDateValid(dt) {
   return reGoodDate.test(dt);
 }
 
+export function generateId(length) {
+  if (!length) {
+    length = 20;
+  }
+
+  let result = '';
+
+  let characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  let charactersLength = characters.length;
+
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
+}
+
 //  Object.defineProperty(Array.prototype, 'flat', {
 //   value: function(depth = 1) {
 //     return this.reduce(function (flat, toFlatten) {
