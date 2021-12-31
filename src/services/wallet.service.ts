@@ -115,28 +115,28 @@ export class WalletService {
       );
     }
 
-    // try {
-    //   wallet.data.transactions.push({
-    //     amount,
-    //     type: TransactionTypes.DEPOSIT,
-    //   });
+    try {
+      wallet.data.transactions.push({
+        amount,
+        type: TransactionTypes.DEPOSIT,
+      });
 
-    //   wallet.data.balance = wallet.data.balance + parseInt(amount);
+      wallet.data.balance = wallet.data.balance + parseInt(amount);
 
-    //   const resp: User = await wallet.owner.save();
+      const resp: User = await wallet.owner.save();
 
-    //   return resp.wallet;
-    // } catch (e) {
-    //   Logger.error(e);
+      return resp.wallet;
+    } catch (e) {
+      Logger.error(e);
 
-    //   throw new HttpException(
-    //     {
-    //       status: HttpStatus.NOT_IMPLEMENTED,
-    //       error: 'Error depositing funds',
-    //     },
-    //     HttpStatus.NOT_IMPLEMENTED,
-    //   );
-    // }
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: 'Error depositing funds',
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
   }
 
   async withdrawal(wallet_id: string, amount: string) {
