@@ -150,4 +150,15 @@ export class WalletController {
       );
     }
   }
+
+  @Get('all-banks')
+  async getAllBanksController(@Res() resp, @Query() query) {
+    const { message, status, data } = await this.walletService.getAllBanks();
+
+    resp.json({
+      banks: data,
+      message,
+      code: status,
+    });
+  }
 }

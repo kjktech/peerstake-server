@@ -7,6 +7,7 @@ import { Wallet } from 'src/models/wallet.model';
 const PayStack = require('paystack-node');
 import { config } from 'dotenv';
 import { generateId } from 'src/utils/helpers';
+import { threadId } from 'worker_threads';
 
 config();
 
@@ -93,6 +94,7 @@ export class WalletService {
         reference: generateId(20),
         amount: 500000,
         email: 'rjemekoba@gmail.com',
+        Authorization: `Bearer ${PAYSTACK_TEST_KEY}`,
       });
 
       console.log(res);
@@ -115,28 +117,28 @@ export class WalletService {
       );
     }
 
-    try {
-      wallet.data.transactions.push({
-        amount,
-        type: TransactionTypes.DEPOSIT,
-      });
+    // try {
+    //   wallet.data.transactions.push({
+    //     amount,
+    //     type: TransactionTypes.DEPOSIT,
+    //   });
 
-      wallet.data.balance = wallet.data.balance + parseInt(amount);
+    //   wallet.data.balance = wallet.data.balance + parseInt(amount);
 
-      const resp: User = await wallet.owner.save();
+    //   const resp: User = await wallet.owner.save();
 
-      return resp.wallet;
-    } catch (e) {
-      Logger.error(e);
+    //   return resp.wallet;
+    // } catch (e) {
+    //   Logger.error(e);
 
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_IMPLEMENTED,
-          error: 'Error depositing funds',
-        },
-        HttpStatus.NOT_IMPLEMENTED,
-      );
-    }
+    //   throw new HttpException(
+    //     {
+    //       status: HttpStatus.NOT_IMPLEMENTED,
+    //       error: 'Error depositing funds',
+    //     },
+    //     HttpStatus.NOT_IMPLEMENTED,
+    //   );
+    // }
   }
 
   async withdrawal(wallet_id: string, amount: string) {
@@ -189,6 +191,25 @@ export class WalletService {
         {
           status: HttpStatus.NOT_IMPLEMENTED,
           error: 'could not return wallet balance',
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+  }
+
+  async getAllBanks() {
+    try {
+      const { body } = await this.paystack.listBanks({
+        currency: 'NGN',
+      });
+
+      return body;
+    } catch (e) {
+      Logger.error(e);
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: 'could not get banks',
         },
         HttpStatus.NOT_IMPLEMENTED,
       );
