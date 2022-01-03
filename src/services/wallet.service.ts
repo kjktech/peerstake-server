@@ -11,8 +11,7 @@ import { threadId } from 'worker_threads';
 
 config();
 
-const environment = process.env.NODE_ENV;
-const { PAYSTACK_TEST_KEY } = process.env;
+const { PAYSTACK_TEST_KEY, NODE_ENV } = process.env;
 @Injectable()
 export class WalletService {
   paystack: typeof PayStack;
@@ -20,7 +19,12 @@ export class WalletService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>, // @InjectPaystack() private readonly paystackClient: paystack,
   ) {
-    this.paystack = new PayStack(PAYSTACK_TEST_KEY, environment);
+    this.paystack = new PayStack(PAYSTACK_TEST_KEY, NODE_ENV);
+  }
+
+  async createWallet() {
+    //* create customer,
+    //* resolve account number with bank code,
   }
 
   async getTransactions(wallet_id: string) {
@@ -90,55 +94,27 @@ export class WalletService {
     );
 
     try {
-      const res = await this.paystack.initializeTransaction({
-        reference: generateId(20),
-        amount: 500000,
-        email: 'rjemekoba@gmail.com',
-        Authorization: `Bearer ${PAYSTACK_TEST_KEY}`,
+      wallet.data.transactions.push({
+        amount,
+        type: TransactionTypes.DEPOSIT,
       });
 
-      console.log(res);
+      wallet.data.balance = wallet.data.balance + parseInt(amount);
 
-      // .then((res) => {
-      //   console.log(res.body);
-      // })
-      // .catch((err) => {
-      //   // deal with error
-      // });
+      const resp: User = await wallet.owner.save();
+
+      return resp.wallet;
     } catch (e) {
       Logger.error(e);
 
       throw new HttpException(
         {
           status: HttpStatus.NOT_IMPLEMENTED,
-          error: 'Error implementing paystack api',
+          error: 'Error depositing funds',
         },
         HttpStatus.NOT_IMPLEMENTED,
       );
     }
-
-    // try {
-    //   wallet.data.transactions.push({
-    //     amount,
-    //     type: TransactionTypes.DEPOSIT,
-    //   });
-
-    //   wallet.data.balance = wallet.data.balance + parseInt(amount);
-
-    //   const resp: User = await wallet.owner.save();
-
-    //   return resp.wallet;
-    // } catch (e) {
-    //   Logger.error(e);
-
-    //   throw new HttpException(
-    //     {
-    //       status: HttpStatus.NOT_IMPLEMENTED,
-    //       error: 'Error depositing funds',
-    //     },
-    //     HttpStatus.NOT_IMPLEMENTED,
-    //   );
-    // }
   }
 
   async withdrawal(wallet_id: string, amount: string) {
@@ -210,6 +186,52 @@ export class WalletService {
         {
           status: HttpStatus.NOT_IMPLEMENTED,
           error: 'could not get banks',
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+  }
+
+  async trigger() {
+    let createdTransaction: any;
+    let verifiedTransaction: any;
+    let reference: string;
+
+    try {
+      createdTransaction = await this.paystack.initializeTransaction({
+        reference: generateId(20),
+        amount: 500000,
+        email: 'rjemekoba@gmail.com',
+      });
+
+      console.log(createdTransaction.body);
+
+      reference = createdTransaction.body.reference;
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: 'Error implementing paystack api' + '-----------------' + e,
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+
+    try {
+      verifiedTransaction = await this.paystack.verifyTransaction({
+        reference: 'KePcwZzHfPFv4blepPwG',
+      });
+
+      console.log(verifiedTransaction.body);
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: 'Error implementing paystack api' + '-----------------' + e,
         },
         HttpStatus.NOT_IMPLEMENTED,
       );

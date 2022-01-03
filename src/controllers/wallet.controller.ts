@@ -158,7 +158,19 @@ export class WalletController {
     resp.json({
       banks: data,
       message,
-      code: status,
+      code: 200,
+      status,
+    });
+  }
+
+  @Get('trigger')
+  async triggerController(@Res() resp, @Query() query) {
+    const response = await this.walletService.trigger();
+
+    resp.json({
+      response,
+      message: 'success',
+      code: 200,
     });
   }
 }
