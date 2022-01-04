@@ -162,15 +162,4 @@ export class WalletController {
       status,
     });
   }
-
-  @Get('trigger')
-  async triggerController(@Res() resp, @Query() query) {
-    const response = await this.walletService.trigger();
-
-    resp.json({
-      response,
-      message: 'success',
-      code: 200,
-    });
-  }
 }

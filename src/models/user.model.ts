@@ -1,6 +1,18 @@
 import * as mongoose from 'mongoose';
 import { WalletSchema, Wallet } from 'src/models/wallet.model';
 
+export const Paystack_User_Reference_Schema = new mongoose.Schema(
+  {
+    id: { type: String, required: true },
+    customer_code: { type: String, required: true },
+  },
+  {
+    collection: 'users',
+    timestamps: true,
+    _id: false,
+  },
+);
+
 export const UserSchema = new mongoose.Schema(
   {
     first_name: { type: String, required: true },
@@ -13,15 +25,8 @@ export const UserSchema = new mongoose.Schema(
     blocked: { type: Boolean, required: true, default: false },
     wallet: WalletSchema,
     dob: {},
+    paystack_ref: Paystack_User_Reference_Schema,
   },
-  {
-    collection: 'users',
-    timestamps: true,
-  },
-);
-
-export const User_Reference_Schema = new mongoose.Schema(
-  {},
   {
     collection: 'users',
     timestamps: true,
@@ -44,6 +49,7 @@ export interface User {
   save: () => {};
 }
 
-export interface User_Reference {
+export interface Paystack_User_Reference {
   id: string;
+  customer_code: string;
 }

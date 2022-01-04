@@ -4,32 +4,43 @@ import { Model } from 'mongoose';
 import { User } from 'src/models/user.model';
 import { TransactionTypes } from 'src/enums';
 import { Wallet } from 'src/models/wallet.model';
-const PayStack = require('paystack-node');
-import { config } from 'dotenv';
-import { generateId } from 'src/utils/helpers';
-import { threadId } from 'worker_threads';
+import { PaystackService } from './paystack.service';
 
-config();
-
-const { PAYSTACK_TEST_KEY, NODE_ENV } = process.env;
 @Injectable()
 export class WalletService {
-  paystack: typeof PayStack;
-
   constructor(
-    @InjectModel('User') private readonly userModel: Model<User>, // @InjectPaystack() private readonly paystackClient: paystack,
-  ) {
-    this.paystack = new PayStack(PAYSTACK_TEST_KEY, NODE_ENV);
-  }
+    @InjectModel('User') private readonly userModel: Model<User>,
+    private readonly paystackService: PaystackService,
+  ) {}
 
-  async createWallet() {
+  async createWallet(
+    account_number: string,
+    bank_code: string,
+    currency: string,
+  ) {
     //* create customer,
     //* resolve account number with bank code,
+    try {
+      let responseAcctNum = await this.paystackService.verifyAccountNumber(
+        account_number,
+        bank_code,
+      );
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: e,
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+
+    return { transactions: [], balance: 0, currency: 'NAIRA' };
   }
 
   async getTransactions(wallet_id: string) {
-    console.log(this.paystack);
-
     try {
       const wallet: { data: Wallet; owner: User } = await this.findWallet(
         wallet_id,
@@ -38,10 +49,11 @@ export class WalletService {
       return wallet.data.transactions;
     } catch (e) {
       Logger.error(e);
+
       throw new HttpException(
         {
           status: HttpStatus.NOT_IMPLEMENTED,
-          error: 'could not return wallet transactions',
+          error: 'could not return wallet transactions ' + e,
         },
         HttpStatus.NOT_IMPLEMENTED,
       );
@@ -175,9 +187,7 @@ export class WalletService {
 
   async getAllBanks() {
     try {
-      const { body } = await this.paystack.listBanks({
-        currency: 'NGN',
-      });
+      const body = await this.paystackService.getAllBanks();
 
       return body;
     } catch (e) {
@@ -186,52 +196,6 @@ export class WalletService {
         {
           status: HttpStatus.NOT_IMPLEMENTED,
           error: 'could not get banks',
-        },
-        HttpStatus.NOT_IMPLEMENTED,
-      );
-    }
-  }
-
-  async trigger() {
-    let createdTransaction: any;
-    let verifiedTransaction: any;
-    let reference: string;
-
-    try {
-      createdTransaction = await this.paystack.initializeTransaction({
-        reference: generateId(20),
-        amount: 500000,
-        email: 'rjemekoba@gmail.com',
-      });
-
-      console.log(createdTransaction.body);
-
-      reference = createdTransaction.body.reference;
-    } catch (e) {
-      Logger.error(e);
-
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_IMPLEMENTED,
-          error: 'Error implementing paystack api' + '-----------------' + e,
-        },
-        HttpStatus.NOT_IMPLEMENTED,
-      );
-    }
-
-    try {
-      verifiedTransaction = await this.paystack.verifyTransaction({
-        reference: 'KePcwZzHfPFv4blepPwG',
-      });
-
-      console.log(verifiedTransaction.body);
-    } catch (e) {
-      Logger.error(e);
-
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_IMPLEMENTED,
-          error: 'Error implementing paystack api' + '-----------------' + e,
         },
         HttpStatus.NOT_IMPLEMENTED,
       );

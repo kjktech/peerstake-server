@@ -6,6 +6,7 @@ import { WalletController } from 'src/controllers/wallet.controller';
 import { WalletService } from 'src/services/wallet.service';
 import { WalletSchema } from 'src/models/wallet.model';
 import { AuthModule } from './auth.module';
+import { PaystackService } from 'src/services/paystack.service';
 
 config();
 
@@ -18,6 +19,6 @@ config();
     AuthModule,
   ],
   controllers: [WalletController],
-  providers: [WalletService],
+  providers: [WalletService, PaystackService],
 })
 export class WalletModule {}

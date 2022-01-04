@@ -14,15 +14,20 @@ import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { jwt_expire_time, BCRYPT_SALT } from 'src/constants';
 import { IToken } from 'src/enums';
-import { User } from 'src/models/user.model';
+import { Paystack_User_Reference, User } from 'src/models/user.model';
 import { SignInDto, SignUpDto } from 'src/dto/auth.dto';
 import messenger from 'src/utils/messenger';
+import { PaystackService } from './paystack.service';
+import { WalletService } from './wallet.service';
+import { Wallet } from 'src/models/wallet.model';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly jwtService: JwtService,
+    private readonly paystackService: PaystackService,
+    private readonly walletService: WalletService,
   ) {}
 
   reviseUserPayload(user): User {
@@ -87,11 +92,14 @@ export class AuthService {
   }
 
   async signUp(signUpPayload: SignUpDto) {
-    let { password, email, username, phone_number } = signUpPayload;
+    let { first_name, last_name, password, email, username, phone_number } =
+      signUpPayload;
 
     let emailExists: User;
     let usernameExists: User;
     let phoneNumberExists: User;
+    let paystack_user_ref: Paystack_User_Reference;
+    let wallet_ref: any;
 
     try {
       emailExists = await this.userModel.findOne({ email });
@@ -118,41 +126,94 @@ export class AuthService {
     }
 
     if (emailExists) {
-      throw new NotAcceptableException(
-        null,
-        'this email is already taken....try changing your email to continue',
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error:
+            'this email is already taken....try changing your email to continue',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
       );
     }
 
     if (usernameExists) {
-      throw new NotAcceptableException(
-        null,
-        'this username is already taken....try changing your username to continue',
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error:
+            'this username is already taken....try changing your username to continue',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
       );
     }
 
     if (phoneNumberExists) {
-      throw new NotAcceptableException(
-        null,
-        'phone number is already taken....try changing your username to continue',
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error:
+            'phone number is already taken....try changing your username to continue',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+
+    try {
+      paystack_user_ref = await this.paystackService.createCustomer(
+        email,
+        first_name,
+        last_name,
+        phone_number.toString(),
+      );
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: e,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    try {
+      wallet_ref = await this.walletService.createWallet(
+        '0065180934',
+        '063',
+        'NGN',
+      );
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: e,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
 
     try {
       password = await bcrypt.hash(password, BCRYPT_SALT);
 
-      let newUser = {
+      let newUser: any = {
         ...signUpPayload,
+        first_name,
+        last_name,
+        phone_number,
         password,
         token: 'unassigned',
         wallet: {
-          transactions: [],
-          balance: 0,
-          currency: 'NAIRA',
+          ...wallet_ref,
+        },
+        paystack_ref: {
+          ...paystack_user_ref,
         },
       };
 
-      new this.userModel(newUser).save();
+      newUser = new this.userModel(newUser).save();
 
       newUser = this.reviseUserPayload(newUser);
 
@@ -160,7 +221,13 @@ export class AuthService {
     } catch (e) {
       Logger.error(e);
 
-      throw new InternalServerErrorException(null, e);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: e,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 

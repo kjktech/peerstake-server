@@ -7,6 +7,8 @@ import { AuthController } from 'src/controllers/auth.controller';
 import { AuthService } from 'src/services/auth.service';
 import { jwt_expire_time, jwt_secret } from 'src/constants';
 import { GoogleStrategy } from 'src/utils/google-strategy';
+import { PaystackService } from 'src/services/paystack.service';
+import { WalletService } from 'src/services/wallet.service';
 
 config();
 
@@ -21,7 +23,7 @@ const jwtConfig = JwtModule.register({
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy],
+  providers: [AuthService, GoogleStrategy, PaystackService, WalletService],
   exports: [AuthService],
 })
 export class AuthModule {}

@@ -1,20 +1,18 @@
 import {
   HttpException,
   HttpStatus,
-  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotAcceptableException,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { createStakeDto, updateStakeDto } from 'src/dto/stake.dto';
 import { CurrencyTypes, DisputeStatus } from 'src/enums';
-import { Party_Reference, Stake, Stake_Dispute } from 'src/models/stake.model';
-import { User, User_Reference } from 'src/models/user.model';
+import { Stake, Stake_Dispute } from 'src/models/stake.model';
+import { User } from 'src/models/user.model';
 import messenger from 'src/utils/messenger';
 import { AuthService } from './auth.service';
 
