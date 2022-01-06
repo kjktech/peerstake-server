@@ -162,4 +162,17 @@ export class WalletController {
       status,
     });
   }
+
+  @Post('trigger')
+  async bruh(@Res() resp, @Body() body) {
+    const { data } = body;
+
+    await this.walletService.trigger(data);
+
+    resp.json({
+      data,
+      message: 'operation successful',
+      code: 200,
+    });
+  }
 }

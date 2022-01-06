@@ -4,22 +4,22 @@ export class createStakeDto {
   requesterId: string;
   name?: string;
   files?: any;
-  creatorId?: string;
+  creator_id?: string;
   supervisors?: string[];
   amount?: string;
   description?: string;
   currency?: CurrencyTypes;
   parties?: string[];
-  dueDate?: Date;
+  due_date?: Date;
 }
 
 export class updateStakeDto {
   requesterId: string;
   stakeId: string;
   name: string;
-  creatorId: string;
+  creator_id: string;
   amount: string;
   description: string;
   currency?: CurrencyTypes;
-  dueDate: Date;
+  due_date: Date;
 }

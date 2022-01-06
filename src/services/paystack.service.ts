@@ -17,6 +17,11 @@ export class PaystackService {
 
   async verifyBankDetails(bank_code: string) {}
 
+  getFeesFor(amount: string): string {
+    const feesCalculator = new PayStack.Fees();
+    return feesCalculator.calculateFor(parseInt(amount)).toString();
+  }
+
   async getAllBanks() {
     try {
       const { body } = await this.paystack.listBanks({
@@ -73,17 +78,22 @@ export class PaystackService {
     }
   }
 
-  async initializeTransaction() {
+  async initializeTransaction(email: string, amount: string) {
     let createdTransaction: any;
 
     try {
       createdTransaction = await this.paystack.initializeTransaction({
-        reference: generateId(20),
-        amount: 500000,
-        email: 'rjemekoba@gmail.com',
+        amount: parseInt(amount) * 100,
+        email: email,
       });
 
-      console.log(createdTransaction.body);
+      const { access_code, reference } = createdTransaction.body.data;
+
+      return {
+        access_code,
+        reference,
+        fee: this.getFeesFor(amount),
+      };
     } catch (e) {
       Logger.error(e);
 
@@ -91,6 +101,37 @@ export class PaystackService {
         {
           status: HttpStatus.NOT_IMPLEMENTED,
           error: 'Error implementing paystack api' + '-----------------' + e,
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+  }
+
+  async makePayment(
+    card: {
+      number: string;
+      cvv: string;
+      expiry_year: string;
+      expiry_month: string;
+    },
+    email: string,
+    amount: number,
+  ) {
+    try {
+      const { body } = this.paystack.chargeCard({
+        card,
+        email,
+        amount, // 156,000 Naira in kobo
+      });
+
+      console.log(body);
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: e,
         },
         HttpStatus.NOT_IMPLEMENTED,
       );
@@ -106,6 +147,8 @@ export class PaystackService {
       });
 
       console.log(verifiedTransaction.body);
+
+      return verifiedTransaction.body;
     } catch (e) {
       Logger.error(e);
 

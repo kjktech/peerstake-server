@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { WalletSchema, Wallet } from 'src/models/wallet.model';
 
-export const Paystack_User_Reference_Schema = new mongoose.Schema(
+export const Paystack_Customer_Reference_Schema = new mongoose.Schema(
   {
     id: { type: String, required: true },
     customer_code: { type: String, required: true },
@@ -25,7 +25,7 @@ export const UserSchema = new mongoose.Schema(
     blocked: { type: Boolean, required: true, default: false },
     wallet: WalletSchema,
     dob: {},
-    paystack_ref: Paystack_User_Reference_Schema,
+    paystack_customer_ref: Paystack_Customer_Reference_Schema,
   },
   {
     collection: 'users',

@@ -30,7 +30,7 @@ export const Stake_Dispute_Schema = new mongoose.Schema(
 export const StakeSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    creatorId: { type: String, required: true },
+    creator_id: { type: String, required: true },
     parties: [Party_Reference_Schema],
     description: { type: String },
     amount: { type: String, required: true },

@@ -12,18 +12,23 @@ export default function messenger(
   senderName?: string,
 ) {
   var transporter = createTransport({
-    service: 'gmail',
-    secure: false,
+    // service: 'smtp-mail.outlook.com',
+    // secureConnection: false,
+    service: 'Outlook365',
+    host: 'smtp.office365.com',
     port: 587,
     requireTLS: true,
     auth: {
       user: MESSENGER_EMAIL,
       pass: MESSENGER_PASSWORD,
     },
+    tls: {
+      ciphers: 'SSLv3',
+    },
   });
 
   var mailOptions = {
-    from: `${senderName || 'PeerStake'} <russell@kjk.africa>`,
+    from: `${senderName || 'PeerStake'} <peerstake@outlook.com>`,
     to: sendee.constructor === Array ? sendee.map((e) => `${e}, `) : sendee,
     subject: title,
     text: message.text,

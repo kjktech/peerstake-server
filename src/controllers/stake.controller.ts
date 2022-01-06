@@ -60,12 +60,12 @@ export class StakeController {
     let { parties }: createStakeDto = req.body;
 
     const {
-      creatorId,
+      creator_id,
       name,
       amount,
       description,
       currency,
-      dueDate,
+      due_date,
     }: createStakeDto = req.body;
 
     const hasError = validator([
@@ -76,7 +76,7 @@ export class StakeController {
       },
       {
         name: 'creator id',
-        value: creatorId,
+        value: creator_id,
         options: { required: true, isString: true },
       },
       {
@@ -111,7 +111,7 @@ export class StakeController {
       },
       {
         name: 'Due Date',
-        value: dueDate,
+        value: due_date,
         options: {
           required: true,
         },
@@ -163,7 +163,7 @@ export class StakeController {
       amount,
       description,
       currency,
-      dueDate,
+      due_date,
     }: updateStakeDto = req.body;
 
     console.log(name);
@@ -194,9 +194,9 @@ export class StakeController {
         value: description,
         options: { isString: true },
       },
-      dueDate && {
+      due_date && {
         name: 'Due Date',
-        value: dueDate,
+        value: due_date,
         options: { isString: true },
       },
     ]);
@@ -221,12 +221,12 @@ export class StakeController {
 
   @Post('claim')
   async claimStakeController(@Req() req, @Res({ passthrough: true }) resp) {
-    const { creatorId, stakeId } = req.body;
+    const { creator_id, stakeId } = req.body;
 
     const hasError = validator([
       {
         name: 'creator id',
-        value: creatorId,
+        value: creator_id,
         options: { required: true, isString: true },
       },
       {

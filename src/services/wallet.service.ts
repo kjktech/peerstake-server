@@ -5,6 +5,10 @@ import { User } from 'src/models/user.model';
 import { TransactionTypes } from 'src/enums';
 import { Wallet } from 'src/models/wallet.model';
 import { PaystackService } from './paystack.service';
+import {
+  Paystack_Transaction_Reference,
+  Transaction,
+} from 'src/models/transaction.model';
 
 @Injectable()
 export class WalletService {
@@ -105,10 +109,55 @@ export class WalletService {
       wallet_id,
     );
 
+    let transactionRef: Paystack_Transaction_Reference;
+
     try {
-      wallet.data.transactions.push({
+      transactionRef = await this.paystackService.initializeTransaction(
+        wallet.owner.email,
+        amount,
+      );
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: e,
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+
+    console.log(transactionRef);
+
+    // try {
+    //   const { body } = this.paystackService.chargeCard({
+    //     card:{
+    //       number: '5399837841116788', // mastercard
+    //       cvv: '324',
+    //       expiry_year: '2024',
+    //       expiry_month: '08'
+    //     },
+    //     email: 'me.biodunch@xyz.ng',
+    //     amount: 15600000 // 156,000 Naira in kobo
+    //   })
+    // } catch (e) {
+    //   Logger.error(e);
+
+    //   throw new HttpException(
+    //     {
+    //       status: HttpStatus.NOT_IMPLEMENTED,
+    //       error: 'Error depositing funds ' + e,
+    //     },
+    //     HttpStatus.NOT_IMPLEMENTED,
+    //   );
+    // }
+
+    try {
+      wallet.data.transactions.push(<Transaction>{
         amount,
         type: TransactionTypes.DEPOSIT,
+        paystack_transaction_ref: transactionRef,
       });
 
       wallet.data.balance = wallet.data.balance + parseInt(amount);
@@ -122,7 +171,7 @@ export class WalletService {
       throw new HttpException(
         {
           status: HttpStatus.NOT_IMPLEMENTED,
-          error: 'Error depositing funds',
+          error: 'Error depositing funds ' + e,
         },
         HttpStatus.NOT_IMPLEMENTED,
       );
@@ -196,6 +245,47 @@ export class WalletService {
         {
           status: HttpStatus.NOT_IMPLEMENTED,
           error: 'could not get banks',
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+  }
+
+  async trigger(data: string) {
+    try {
+      const res = await this.paystackService.verifyTransaction(data);
+
+      // return res;
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: e,
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+
+    try {
+      await this.paystackService.makePayment(
+        {
+          number: '5399837841116788',
+          cvv: '324',
+          expiry_year: '2024',
+          expiry_month: '08',
+        },
+        'me.biodunch@xyz.ng',
+        15600000,
+      );
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: e,
         },
         HttpStatus.NOT_IMPLEMENTED,
       );

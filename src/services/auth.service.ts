@@ -208,7 +208,7 @@ export class AuthService {
         wallet: {
           ...wallet_ref,
         },
-        paystack_ref: {
+        paystack_customer_ref: {
           ...paystack_user_ref,
         },
       };

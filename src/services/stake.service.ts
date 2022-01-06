@@ -26,15 +26,15 @@ export class StakeService {
 
   async fullClaimStake(fc_stake_payload: {
     stakeId: string;
-    creatorId: string;
+    creator_id: string;
   }) {
-    let { creatorId, stakeId } = fc_stake_payload;
+    let { creator_id, stakeId } = fc_stake_payload;
 
     let stakeExists: Stake;
     let userExists: User;
 
     try {
-      userExists = await this.userModel.findOne({ _id: creatorId });
+      userExists = await this.userModel.findOne({ _id: creator_id });
     } catch (e) {
       Logger.error(e);
 
@@ -141,7 +141,7 @@ export class StakeService {
 
     asmo.map((e) => {
       formatted.push({
-        userId: e['id'],
+        user_id: e['id'],
         hasVerifiedStake: false,
         hasAcceptedStakeInvite: false,
       });
@@ -156,16 +156,15 @@ export class StakeService {
     let {
       files,
       parties,
-
       name,
       description,
-      creatorId,
-      dueDate,
+      creator_id,
+      due_date,
       amount,
       currency,
     } = stake_payload;
 
-    const verified_user: User = await this.verifyCreator(creatorId, amount);
+    const verified_user: User = await this.verifyCreator(creator_id, amount);
 
     const parties_ref_docs = await this.verifyParties(parties);
 
@@ -173,9 +172,9 @@ export class StakeService {
       let newStake: any = {
         name,
         amount,
-        dueDate,
+        due_date,
         description,
-        creatorId,
+        creator_id,
         claimRaised: false,
         claimed: false,
         currency: currency ?? CurrencyTypes.NAIRA,
@@ -243,15 +242,15 @@ export class StakeService {
 
   async preClaimStake(cl_stake_payload: {
     stakeId: string;
-    creatorId: string;
+    creator_id: string;
   }) {
-    let { creatorId, stakeId } = cl_stake_payload;
+    let { creator_id, stakeId } = cl_stake_payload;
 
     let stakeExists: Stake;
     let userExists: User;
 
     try {
-      userExists = await this.userModel.findOne({ _id: creatorId });
+      userExists = await this.userModel.findOne({ _id: creator_id });
     } catch (e) {
       Logger.error(e);
 
@@ -351,14 +350,14 @@ export class StakeService {
     }
 
     foundStake['parties'].map((each, idx) => {
-      if (each['userId'] === foundUser['_id']) foundPartyRef = true;
+      if (each['user_id'] === foundUser['_id']) foundPartyRef = true;
     });
 
     // console.log(foundStake);
     // console.log(foundPartyRef);
 
     // const updatedStake = await this.stakeModel.updateOne(
-    //   { _id: stakeId, 'parties.userId': partyId },
+    //   { _id: stakeId, 'parties.user_id': partyId },
     //   {
     //     $set: {
     //       'items.$.hasVerifiedStake': true,
@@ -370,7 +369,7 @@ export class StakeService {
     // );
 
     const updatedStake = await this.stakeModel.updateOne(
-      { 'parties.userId': partyId },
+      { 'parties.user_id': partyId },
       {
         $set: {
           'items.$.hasVerifiedStake': true,
@@ -403,7 +402,7 @@ export class StakeService {
 
     if (all) {
       try {
-        foundStake = await this.stakeModel.find({ creatorId: creator_id });
+        foundStake = await this.stakeModel.find({ creator_id: creator_id });
 
         return foundStake;
       } catch {
@@ -413,7 +412,7 @@ export class StakeService {
       try {
         foundStake = await this.stakeModel.findOne({
           _id: stake_id,
-          creatorId: creator_id,
+          creator_id: creator_id,
         });
 
         return foundStake;
@@ -478,7 +477,7 @@ export class StakeService {
       const acceptedStake = await this.stakeModel.findOneAndUpdate(
         {
           _id: stake_id,
-          'parties.userId': party_id,
+          'parties.user_id': party_id,
         },
         {
           $set: {
