@@ -115,13 +115,18 @@ export class PaystackService {
       expiry_month: string;
     },
     email: string,
-    amount: number,
+    amount: string,
   ) {
     try {
       const { body } = this.paystack.chargeCard({
-        card,
-        email,
-        amount, // 156,000 Naira in kobo
+        card: {
+          number: '4084084084084081',
+          cvv: '408',
+          expiry_year: '2024',
+          expiry_month: '08',
+        },
+        email: 'me.biodunch@xyz.ng',
+        amount: '15600000',
       });
 
       console.log(body);

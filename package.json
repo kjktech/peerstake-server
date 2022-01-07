@@ -38,6 +38,7 @@
     "moment": "^2.29.1",
     "mongoose": "^5.12.10",
     "nestjs-paystack": "^1.0.0",
+    "nodejs-nodemailer-outlook": "^1.2.4",
     "nodemailer": "^6.7.2",
     "passport": "^0.5.2",
     "passport-google-oauth20": "^2.0.0",

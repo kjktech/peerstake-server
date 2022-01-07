@@ -271,13 +271,13 @@ export class WalletService {
     try {
       await this.paystackService.makePayment(
         {
-          number: '5399837841116788',
-          cvv: '324',
+          number: '4084084084084081',
+          cvv: '408',
           expiry_year: '2024',
           expiry_month: '08',
         },
         'me.biodunch@xyz.ng',
-        15600000,
+        '15600000',
       );
     } catch (e) {
       Logger.error(e);

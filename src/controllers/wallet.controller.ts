@@ -4,11 +4,8 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Param,
   Post,
-  Put,
   Query,
-  Req,
   Res,
 } from '@nestjs/common';
 import { AuthService } from 'src/services/auth.service';

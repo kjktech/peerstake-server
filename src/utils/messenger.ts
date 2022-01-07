@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 import { createTransport } from 'nodemailer';
+var nodeoutlook = require('nodejs-nodemailer-outlook');
 
 config();
 
@@ -12,21 +13,15 @@ export default function messenger(
   senderName?: string,
 ) {
   var transporter = createTransport({
-    // service: 'smtp-mail.outlook.com',
-    // secureConnection: false,
-    service: 'Outlook365',
-    host: 'smtp.office365.com',
+    service: 'gmail',
+    secure: false,
     port: 587,
     requireTLS: true,
     auth: {
       user: MESSENGER_EMAIL,
       pass: MESSENGER_PASSWORD,
     },
-    tls: {
-      ciphers: 'SSLv3',
-    },
   });
-
   var mailOptions = {
     from: `${senderName || 'PeerStake'} <peerstake@outlook.com>`,
     to: sendee.constructor === Array ? sendee.map((e) => `${e}, `) : sendee,
@@ -46,7 +41,6 @@ export default function messenger(
   } catch (e) {
     console.log(e);
   }
-
   return new Promise((resolve, reject) => {
     transporter.sendMail(mailOptions, function (err, info) {
       if (err) {
@@ -58,40 +52,4 @@ export default function messenger(
       }
     });
   });
-
-  // console.log('Sent mail => ', {
-  //   auth: {
-  //     user: process.env.NOREPLY_EMAIL,
-  //     pass: process.env.NOREPLY_PASSWORD,
-  //   },
-  // });
-
-  // let transporter = createTransport({
-  //   host: 'mail.peerstake.com',
-  //   port: 465,
-  //   auth: {
-  //     user: process.env.NOREPLY_EMAIL,
-  //     pass: process.env.NOREPLY_PASSWORD,
-  //   },
-  // });
-
-  // let mailOptions = {
-  //   from: `${senderName || 'PeerStake'} <${process.env.NOREPLY_EMAIL}>`,
-  //   to: sendee,
-  //   subject: title,
-  // text: message.text,
-  // html: message.html,
-  // };
-
-  // return new Promise((resolve, reject) => {
-  //   transporter.sendMail(mailOptions, function (err, info) {
-  //     if (err) {
-  //       console.log('Error while sending email => ' + err);
-  //       reject('Error while sending email' + err);
-  //     } else {
-  //       console.log('Email sent => ', info);
-  //       resolve(info);
-  //     }
-  //   });
-  // });
 }
