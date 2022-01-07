@@ -13,9 +13,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     super({
       clientID: PASSPORT_CLIENT_ID,
       clientSecret: PASSPORT_CLIENT_SECRET,
-      callBackURL:
+      callbackURL:
         'https://peerstake-server.herokuapp.com/auth/google/callback',
-      scope: '',
+      scope: ['email', 'profile'],
     });
   }
 

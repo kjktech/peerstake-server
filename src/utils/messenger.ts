@@ -1,6 +1,5 @@
 import { config } from 'dotenv';
 import { createTransport } from 'nodemailer';
-var nodeoutlook = require('nodejs-nodemailer-outlook');
 
 config();
 
