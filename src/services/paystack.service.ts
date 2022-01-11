@@ -1,18 +1,21 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { config } from 'dotenv';
-import { generateId } from 'src/utils/helpers';
 const PayStack = require('paystack-node');
 
 config();
 
-const { PAYSTACK_TEST_KEY, NODE_ENV } = process.env;
+const { PAYSTACK_LIVE_KEY, PAYSTACK_TEST_KEY, NODE_ENV } = process.env;
 
 @Injectable()
 export class PaystackService {
   paystack: typeof PayStack;
 
   constructor() {
-    this.paystack = new PayStack(PAYSTACK_TEST_KEY, NODE_ENV);
+    this.paystack = new PayStack(
+      // NODE_ENV === 'production' ? PAYSTACK_LIVE_KEY :
+      PAYSTACK_TEST_KEY,
+      NODE_ENV,
+    );
   }
 
   async verifyBankDetails(bank_code: string) {}
@@ -57,7 +60,7 @@ export class PaystackService {
         phone,
       });
 
-      console.log(createdCustomer.body);
+      // console.log(createdCustomer.body);
 
       const { id, customer_code } = createdCustomer.body.data;
 
