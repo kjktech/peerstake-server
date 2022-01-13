@@ -1,3 +1,4 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { config } from 'dotenv';
 import { createTransport } from 'nodemailer';
 
@@ -45,6 +46,14 @@ export default function messenger(
       if (err) {
         console.log('Error while sending email => ' + err);
         reject('Error while sending email' + err);
+
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_IMPLEMENTED,
+            error: 'Error while sending email => ' + err,
+          },
+          HttpStatus.NOT_IMPLEMENTED,
+        );
       } else {
         console.log('Email sent => ', info);
         resolve(info);

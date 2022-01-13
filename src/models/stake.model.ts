@@ -35,7 +35,7 @@ export const StakeSchema = new mongoose.Schema(
     description: { type: String },
     amount: { type: String, required: true },
     supervisors: [Party_Reference_Schema],
-    due_date: { type: Date, required: true },
+    due_date: { type: String, required: true },
     claimed: { type: Boolean, required: true, default: false },
     claim_raised: { type: Boolean, required: true, default: false },
     claim_date: { type: Date },

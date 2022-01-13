@@ -120,36 +120,46 @@ export class StakeService {
     let formatted = [];
     let emails = [];
 
-    let asmo = await this.userModel.find(
-      {
-        _id: partiesIds.map((_id) => _id),
-        blocked: false,
-      },
+    try {
+      let asmo = await this.userModel.find(
+        {
+          _id: partiesIds.map((_id) => _id),
+          blocked: false,
+        },
 
-      async (err, docs) => {
-        if (err) {
-          throw new HttpException(
-            {
-              status: HttpStatus.NOT_FOUND,
-              error: err,
-            },
-            HttpStatus.NOT_FOUND,
-          );
-        }
-      },
-    );
+        async (err, docs) => {
+          if (err) {
+            throw new HttpException(
+              {
+                status: HttpStatus.NOT_FOUND,
+                error: err,
+              },
+              HttpStatus.NOT_FOUND,
+            );
+          }
+        },
+      );
 
-    asmo.map((e) => {
-      formatted.push({
-        user_id: e['id'],
-        hasVerifiedStake: false,
-        hasAcceptedStakeInvite: false,
+      asmo.map((e) => {
+        formatted.push({
+          user_id: e['id'],
+          hasVerifiedStake: false,
+          hasAcceptedStakeInvite: false,
+        });
+
+        emails.push(e['email']);
       });
 
-      emails.push(e['email']);
-    });
-
-    return { info: formatted, emails };
+      return { info: formatted, emails };
+    } catch (e) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'could not find party ----------------- ' + e,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 
   async createStake(stake_payload: createStakeDto) {

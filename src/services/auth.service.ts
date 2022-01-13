@@ -20,7 +20,10 @@ import messenger from 'src/utils/messenger';
 import { PaystackService } from './paystack.service';
 import { WalletService } from './wallet.service';
 import { Wallet } from 'src/models/wallet.model';
+import { config } from 'dotenv';
 
+config();
+const { APP_URL } = process.env;
 @Injectable()
 export class AuthService {
   constructor(
@@ -313,6 +316,7 @@ export class AuthService {
 
     messenger(email, 'reset password', {
       text: `Click the link below to reset password`,
+      html: `<a href=${APP_URL}>Reset Password</a>`,
     });
   }
 

@@ -72,7 +72,13 @@ export class AuthController {
         message: 'operation successful',
       });
     } else {
-      throw new NotFoundException(null, 'Invalid email/password');
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: 'Invalid email/password',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
     }
   }
 
@@ -166,11 +172,13 @@ export class AuthController {
 
       resp.json({ user, description: 'operaton sucessful', code: 0 });
     } else {
-      resp.json({
-        status: 'failed',
-        description: hasError?.[0].msg[0],
-        code: 406,
-      });
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: hasError?.[0].msg[0],
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
     }
   }
 
@@ -193,7 +201,13 @@ export class AuthController {
         message: 'email sent successfully',
       });
     } else {
-      throw new NotFoundException(null, 'counld not process request');
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: 'counld not process request',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
     }
   }
 }
