@@ -195,11 +195,21 @@ export class AuthController {
     ]);
 
     if (!hasError) {
-      await this.authService.initResetPassword(email);
+      const { success } = await this.authService.initResetPassword(email);
 
-      resp.json({
-        message: 'email sent successfully',
-      });
+      if (success) {
+        resp.json({
+          message: 'email sent successfully',
+        });
+      } else {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_ACCEPTABLE,
+            error: 'counld not send reset token',
+          },
+          HttpStatus.NOT_ACCEPTABLE,
+        );
+      }
     } else {
       throw new HttpException(
         {

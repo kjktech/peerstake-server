@@ -346,6 +346,11 @@ export class AuthService {
       text: `Click the link below to reset password`,
       html: `<a href=${APP_URL + '/ResetPassword/' + token}>Reset Password</a>`,
     });
+
+    return {
+      status: 'success',
+      success: false,
+    };
   }
 
   async verifyResetPassword(reset_token: string) {
