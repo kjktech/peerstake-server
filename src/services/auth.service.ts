@@ -314,13 +314,72 @@ export class AuthService {
       throw new NotAcceptableException(null, 'user does not exist');
     }
 
-    messenger(email, 'reset password', {
+    const token = bcrypt.hash(foundUser.email, BCRYPT_SALT);
+
+    foundUser.reset_token = token;
+
+    new this.userModel(foundUser).save();
+
+    messenger(email, 'Reset Password', {
       text: `Click the link below to reset password`,
-      html: `<a href=${APP_URL}>Reset Password</a>`,
+      html: `<a href=${APP_URL + '/ResetPassword/' + token}>Reset Password</a>`,
     });
   }
 
-  async completeResetPassword(user_id: string, password: string) {}
+  async verifyResetPassword(reset_token: string) {
+    let foundUser: User;
+
+    try {
+      foundUser = await this.userModel.findOne({ reset_token });
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: 'error querying database ' + e,
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+
+    if (!foundUser) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: 'invalid verification code',
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+
+    return foundUser;
+  }
+
+  async completeResetPassword(new_password: string, token: string) {
+    const foundUser = await this.verifyResetPassword(token);
+
+    try {
+      foundUser.password = await bcrypt.hash(new_password, BCRYPT_SALT);
+
+      new this.userModel(foundUser).save();
+
+      return {
+        status: 'success',
+        code: 200,
+      };
+    } catch (e) {
+      Logger.error(e);
+
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: e,
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
+  }
 
   async verifyUser(user_id: string) {
     let foundUser: User;

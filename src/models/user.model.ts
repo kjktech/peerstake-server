@@ -26,6 +26,7 @@ export const UserSchema = new mongoose.Schema(
     wallet: WalletSchema,
     dob: {},
     paystack_customer_ref: Paystack_Customer_Reference_Schema,
+    reset_token: { type: String, required: true },
   },
   {
     collection: 'users',
@@ -45,6 +46,7 @@ export interface User {
   blocked: boolean;
   token: string;
   dob: string;
+  reset_token: string;
   wallet: Wallet;
   save: () => {};
 }

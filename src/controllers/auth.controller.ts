@@ -24,7 +24,7 @@ var moment = require('moment');
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get('social-login')
+  @Get('google-login')
   @UseGuards(AuthGuard('google'))
   async socialLogin() {}
 
@@ -196,6 +196,43 @@ export class AuthController {
 
     if (!hasError) {
       await this.authService.initResetPassword(email);
+
+      resp.json({
+        message: 'email sent successfully',
+      });
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_ACCEPTABLE,
+          error: 'counld not process request',
+        },
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+  }
+
+  @Post('complete-reset-password')
+  async completePasswordController(
+    @Req() req,
+    @Res({ passthrough: true }) resp,
+  ) {
+    const { new_password, token } = req.body;
+
+    const hasError = validator([
+      {
+        name: 'new password',
+        value: new_password,
+        options: { required: true, isString: true },
+      },
+      {
+        name: 'token',
+        value: token,
+        options: { required: true, isString: true },
+      },
+    ]);
+
+    if (!hasError) {
+      await this.authService.completeResetPassword(new_password, token);
 
       resp.json({
         message: 'email sent successfully',
