@@ -319,7 +319,7 @@ export class AuthService {
       throw new NotAcceptableException(null, 'user does not exist');
     }
 
-    const token = bcrypt.hash(foundUser.email, BCRYPT_SALT);
+    const token = await bcrypt.hash(foundUser.email, BCRYPT_SALT);
 
     try {
       await this.userModel.findOneAndUpdate(
