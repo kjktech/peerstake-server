@@ -304,9 +304,14 @@ export class AuthService {
     } catch (e) {
       Logger.error(e);
 
-      throw new NotFoundException(
-        null,
-        'incorrect credentials. Check your email and password and try again',
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error:
+            'incorrect credentials. Check your email and password and try again ' +
+            e,
+        },
+        HttpStatus.NOT_IMPLEMENTED,
       );
     }
 
@@ -316,9 +321,26 @@ export class AuthService {
 
     const token = bcrypt.hash(foundUser.email, BCRYPT_SALT);
 
-    foundUser.reset_token = token;
+    try {
+      await this.userModel.findOneAndUpdate(
+        {
+          email: foundUser.email,
+        },
+        {
+          reset_token: token,
+        },
+      );
+    } catch (e) {
+      Logger.error(e);
 
-    new this.userModel(foundUser).save();
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          error: 'error saving user token  ' + e,
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+      );
+    }
 
     messenger(email, 'Reset Password', {
       text: `Click the link below to reset password`,
