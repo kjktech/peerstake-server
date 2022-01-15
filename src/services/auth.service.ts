@@ -345,8 +345,7 @@ export class AuthService {
     messenger(email, 'Reset Password', {
       text: `Click the link below to reset password`,
       html: `<a href=${
-        APP_URL ??
-        'https://peerstake.herokuapp.com/' + '/ResetPassword/' + token
+        APP_URL ?? 'https://peerstake.herokuapp.com/' + 'ResetPassword/' + token
       }>Reset Password</a>`,
     });
 
