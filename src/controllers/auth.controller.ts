@@ -205,7 +205,7 @@ export class AuthController {
         throw new HttpException(
           {
             status: HttpStatus.NOT_ACCEPTABLE,
-            error: 'counld not send reset token',
+            error: 'could not send reset token',
           },
           HttpStatus.NOT_ACCEPTABLE,
         );
